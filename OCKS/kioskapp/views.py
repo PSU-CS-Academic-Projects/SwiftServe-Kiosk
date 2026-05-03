@@ -26,6 +26,42 @@ class KioskMenuView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['menu_items'] = MenuItem.objects.filter(available=True).select_related('category')
+
+        initial_cart = {}
+        cart = self.request.session.get('cart', {})
+        for item_id, item_data in cart.items():
+            try:
+                menu_item = MenuItem.objects.get(id=item_id)
+            except MenuItem.DoesNotExist:
+                continue
+
+            initial_cart[str(item_id)] = {
+                'name': menu_item.name,
+                'price': str(menu_item.price),
+                'quantity': item_data.get('quantity', 1),
+                'image': menu_item.image.url if menu_item.image else '',
+                'customizations': item_data.get('customizations', []),
+            }
+
+        context['initial_cart'] = initial_cart
+        return context
+
+
+class GetStartedView(TemplateView):
+    """Landing page with a rotating carousel of menu images and a Get Started button"""
+    template_name = 'get_started.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # pick up to 6 menu items (prefer ones with images)
+        items_with_images = list(MenuItem.objects.filter(available=True).exclude(image='').select_related('category')[:6])
+        if len(items_with_images) < 6:
+            # fill the rest with any available items
+            ids = [i.id for i in items_with_images]
+            more = list(MenuItem.objects.filter(available=True).exclude(id__in=ids).select_related('category')[:6 - len(items_with_images)])
+            items_with_images.extend(more)
+
+        context['carousel_items'] = items_with_images
         return context
 
 class KioskCartView(TemplateView):
@@ -213,12 +249,22 @@ def add_to_cart(request):
         customizations = data.get('customizations', [])
         
         cart = request.session.get('cart', {})
-        
-        if str(item_id) in cart:
-            cart[str(item_id)]['quantity'] += quantity
+        # enforce per-item max_quantity
+        try:
+            menu_item = MenuItem.objects.get(id=item_id)
+            max_q = int(menu_item.max_quantity or 99)
+        except MenuItem.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+
+        key = str(item_id)
+        existing_qty = cart.get(key, {}).get('quantity', 0)
+        new_qty = min(existing_qty + quantity, max_q)
+        if new_qty <= 0:
+            if key in cart:
+                del cart[key]
         else:
-            cart[str(item_id)] = {
-                'quantity': quantity,
+            cart[key] = {
+                'quantity': new_qty,
                 'customizations': customizations
             }
         
@@ -264,12 +310,18 @@ def update_cart_item(request):
         quantity = int(data.get('quantity', 1))
         
         cart = request.session.get('cart', {})
-        
         if item_id in cart:
+            # enforce per-item max_quantity
+            try:
+                menu_item = MenuItem.objects.get(id=int(item_id))
+                max_q = int(menu_item.max_quantity or 99)
+            except MenuItem.DoesNotExist:
+                max_q = 99
+
             if quantity <= 0:
                 del cart[item_id]
             else:
-                cart[item_id]['quantity'] = quantity
+                cart[item_id]['quantity'] = min(quantity, max_q)
             request.session['cart'] = cart
         
         return JsonResponse({

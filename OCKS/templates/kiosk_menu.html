@@ -11,13 +11,27 @@
 	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
 </head>
 <body>
-	<div id="preloader">
-		<div class="jumper">
-			<div></div>
-			<div></div>
-			<div></div>
+		<div id="preloader">
+			<div class="jumper">
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
 		</div>
-	</div>
+
+		<script>
+		// Fallback to ensure preloader is hidden if other scripts fail
+		(function(){
+			var pre = document.getElementById('preloader');
+			if(!pre) return;
+			function hidePre(){ try{ pre.style.display='none'; pre.style.visibility='hidden'; }catch(e){} }
+			if(document.readyState === 'complete') hidePre();
+			window.addEventListener('load', hidePre);
+			document.addEventListener('DOMContentLoaded', function(){ setTimeout(hidePre, 600); });
+			// safety timeout
+			setTimeout(hidePre, 3000);
+		})();
+		</script>
 
 	<div class="kiosk-container">
 		<!-- Header -->
@@ -28,9 +42,12 @@
 					<p>Digital Ordering Kiosk</p>
 				</div>
 				<div class="kiosk-actions">
-					<button id="cart-btn" class="btn btn-lg btn-primary">
-						<i class="fa fa-shopping-cart"></i> Cart <span id="cart-count" class="badge">0</span>
-					</button>
+					<div class="cart-area">
+						<button id="cart-btn" class="btn btn-lg btn-primary">
+							<i class="fa fa-shopping-cart"></i> Cart <span id="cart-count" class="badge">0</span>
+						</button>
+						<div id="cart-preview" class="cart-preview" aria-hidden="false"></div>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -153,13 +170,16 @@
 
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	{{ initial_cart|json_script:"initial-cart-data" }}
 	<script>
+		const initialCartData = document.getElementById('initial-cart-data');
 		const cartBtn = document.getElementById('cart-btn');
 		const proceedBtn = document.getElementById('proceed-to-cart-btn');
 		const categoryBtns = document.querySelectorAll('.category-btn');
 		const menuCards = document.querySelectorAll('.menu-card');
 		const cartCountBadge = document.getElementById('cart-count');
-		let cart = {};
+		let cart = initialCartData ? JSON.parse(initialCartData.textContent || '{}') : {};
+		const cartPreview = document.getElementById('cart-preview');
 
 		// Category filtering
 		categoryBtns.forEach(btn => {
@@ -185,22 +205,54 @@
 				const itemId = this.dataset.itemId;
 				const itemName = this.dataset.itemName;
 				const itemPrice = parseFloat(this.dataset.itemPrice);
+                // find image src for animation/preview
+                let card = this.closest('.menu-card');
+                let imgEl = card.querySelector('img') || card.querySelector('.menu-card-image-placeholder');
+                let imgSrc = imgEl && imgEl.tagName === 'IMG' ? imgEl.src : '{% static "images/slide-01.jpg" %}';
 				
 				if (!cart[itemId]) {
 					cart[itemId] = {
 						name: itemName,
 						price: itemPrice,
 						quantity: 0,
+						image: imgSrc,
 						customizations: []
 					};
 				}
 				cart[itemId].quantity += 1;
+				// animate image to cart
+				animateImageToCart(imgSrc, this);
 				updateCartUI();
 				
 				// Send to backend
 				addToCartAPI(itemId, 1, []);
 			});
 		});
+
+		function animateImageToCart(src, btn) {
+			try {
+				const flyItem = document.createElement('div');
+				flyItem.className = 'fly-to-cart-item';
+				flyItem.style.backgroundImage = `url("${src}")`;
+				flyItem.style.position = 'fixed';
+				flyItem.style.width = '48px';
+				flyItem.style.height = '48px';
+				flyItem.style.backgroundSize = 'cover';
+				flyItem.style.backgroundPosition = 'center';
+				flyItem.style.borderRadius = '50%';
+				flyItem.style.zIndex = '9999';
+				flyItem.style.pointerEvents = 'none';
+				flyItem.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+				document.body.appendChild(flyItem);
+
+				const rect = btn.getBoundingClientRect();
+				flyItem.style.left = rect.left + 'px';
+				flyItem.style.top = rect.top + 'px';
+
+				const cartRect = document.getElementById('cart-btn').getBoundingClientRect();
+				$(flyItem).animate({ left: cartRect.left + 10, top: cartRect.top + 10, width: 24, height: 24, opacity: 0.6 }, 650, function() { $(this).remove(); });
+			} catch (e) { /* fail silently */ }
+		}
 
 		// Cart button
 		cartBtn.addEventListener('click', function() {
@@ -220,6 +272,53 @@
 			const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
 			cartCountBadge.textContent = totalItems;
 			proceedBtn.disabled = totalItems === 0;
+
+			// render cart preview thumbnails
+			cartPreview.innerHTML = '';
+			Object.keys(cart).forEach((id, idx) => {
+				const it = cart[id];
+				const wrapper = document.createElement('div');
+				wrapper.className = 'cart-thumb';
+				wrapper.dataset.itemId = id;
+
+				const img = document.createElement('img');
+				img.src = it.image || '{% static "images/slide-01.jpg" %}';
+				img.alt = it.name;
+				wrapper.appendChild(img);
+
+				const qtyBadge = document.createElement('span');
+				qtyBadge.className = 'thumb-qty';
+				qtyBadge.textContent = it.quantity;
+				wrapper.appendChild(qtyBadge);
+
+				const removeBtn = document.createElement('button');
+				removeBtn.className = 'thumb-remove';
+				removeBtn.innerHTML = '&times;';
+				removeBtn.title = 'Remove item';
+				removeBtn.addEventListener('click', function(e){ e.stopPropagation(); removeItemFromCart(id); });
+				wrapper.appendChild(removeBtn);
+
+				cartPreview.appendChild(wrapper);
+			});
+
+			// limit visible height/scroll when many items
+			if (Object.keys(cart).length > 6) {
+				cartPreview.classList.add('scrollable');
+			} else {
+				cartPreview.classList.remove('scrollable');
+			}
+		}
+
+		function removeItemFromCart(itemId) {
+			// update local
+			if (cart[itemId]) delete cart[itemId];
+			updateCartUI();
+			// send backend removal
+			fetch('{% url "remove_from_cart" %}', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+				body: JSON.stringify({ item_id: itemId })
+			});
 		}
 
 		function addToCartAPI(itemId, quantity, customizations) {
@@ -260,6 +359,16 @@
 
 		// Initialize cart from session
 		updateCartUI();
+
+		// Back button confirmation if cart not empty
+		const backBtn = document.getElementById('back-btn');
+		backBtn.addEventListener('click', function(e){
+			if (Object.keys(cart).length > 0) {
+				if (!confirm('You have items in your cart. Do you really want to go back?')) return;
+				if (!confirm('Please confirm again: leaving now will keep your cart on this page. Continue?')) return;
+			}
+			window.location.href = '{% url "home" %}';
+		});
 
 		// Hide preloader on page load
 		window.addEventListener('load', function() {

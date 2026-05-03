@@ -4,6 +4,7 @@ from django.db import models
 class Order(models.Model):
     ORDER_TYPE = [
         ('take_out', 'Take Out'),
+        ('dine_in', 'Dine In'),
         ('delivery', 'Delivery'),
     ]
 
@@ -22,6 +23,7 @@ class MenuItem(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
+    max_quantity = models.PositiveIntegerField(default=99)
     available = models.BooleanField(default=True)
 
 class OrderItem(models.Model):

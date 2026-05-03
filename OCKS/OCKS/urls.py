@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from kioskapp.views import (
-    HomePageView, KioskMenuView, KioskCartView, KioskCheckoutView,
+    HomePageView, GetStartedView, KioskMenuView, KioskCartView, KioskCheckoutView,
     OrderCreateView, OrderStatusView, AdminOrdersDashboardView,
     add_to_cart, remove_from_cart, update_cart_item, update_order_status
 )
@@ -29,7 +30,9 @@ urlpatterns = [
     # Admin (custom first, then built-in)
     path('admin/orders/', AdminOrdersDashboardView.as_view(), name='admin_orders'),
     path('admin/', admin.site.urls),
-    path('', views.HomePageView.as_view(), name='home'),
+    path('', RedirectView.as_view(pattern_name='home_page', permanent=False), name='home'),
+    path('home/', views.GetStartedView.as_view(), name='home_page'),
+    path('get-started/', views.GetStartedView.as_view(), name='get_started'),
     
     # Kiosk workflow
     path('kiosk/menu/', KioskMenuView.as_view(), name='kiosk_menu'),

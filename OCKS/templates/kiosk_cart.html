@@ -96,21 +96,19 @@
 						<strong>Total:</strong>
 						<strong>₱<span id="final-total">{{ cart_total }}</span></strong>
 					</div>
+					<div class="cart-summary-actions">
+						<a href="{% url 'kiosk_menu' %}" class="btn btn-secondary btn-lg">Back to Menu</a>
+						{% if not cart_empty %}
+						<form method="POST" action="{% url 'order_create' %}">
+							{% csrf_token %}
+							<button type="button" id="proceed-checkout-btn" class="btn btn-primary btn-lg">Proceed to Checkout</button>
+						</form>
+						{% endif %}
+					</div>
 				</div>
 			</div>
 			{% endif %}
 		</main>
-
-		<!-- Footer Navigation -->
-		<footer class="kiosk-footer">
-			<a href="{% url 'kiosk_menu' %}" class="btn btn-secondary btn-lg">Back to Menu</a>
-			{% if not cart_empty %}
-			<form method="POST" action="{% url 'order_create' %}" class="ms-auto">
-				{% csrf_token %}
-				<button type="button" id="proceed-checkout-btn" class="btn btn-primary btn-lg">Proceed to Checkout</button>
-			</form>
-			{% endif %}
-		</footer>
 	</div>
 
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>

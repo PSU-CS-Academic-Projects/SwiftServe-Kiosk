@@ -8,10 +8,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'available', 'has_image')
+    list_display = ('name', 'category', 'price', 'available', 'max_quantity', 'has_image')
     list_filter = ('category', 'available')
     search_fields = ('name', 'description')
-    fields = ('name', 'category', 'price', 'description', 'image', 'available')
+    fields = ('name', 'category', 'price', 'description', 'image', 'max_quantity', 'available')
     
     def has_image(self, obj):
         return bool(obj.image)
