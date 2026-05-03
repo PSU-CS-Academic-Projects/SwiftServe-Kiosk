@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Order Status - Kiosk</title>
+	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
+	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+</head>
+<body>
+	<div class="kiosk-container">
+		<!-- Header -->
+		<header class="kiosk-header">
+			<div class="kiosk-header-top">
+				<div class="kiosk-title">
+					<h1>Order Status Tracker</h1>
+				</div>
+			</div>
+		</header>
+
+		<!-- Main Content -->
+		<main class="kiosk-main status-main">
+			<div class="status-container">
+				<!-- Queue Number Display -->
+				<div class="queue-display-section">
+					<h3>Queue Number</h3>
+					<div class="queue-number-large">
+						Q-{{ order.queue_number|stringformat:"03d" }}
+					</div>
+				</div>
+
+				<!-- Status Progress -->
+				<div class="status-progress-section">
+					<h4 class="mb-4">Order Progress</h4>
+					<div class="status-timeline">
+						<div class="status-step {% if order.status == 'Pending' or order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+							<div class="status-icon">
+								<i class="fa fa-hourglass-half"></i>
+							</div>
+							<div class="status-label">Pending</div>
+						</div>
+						<div class="status-connector {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}"></div>
+
+						<div class="status-step {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+							<div class="status-icon">
+								<i class="fa fa-fire"></i>
+							</div>
+							<div class="status-label">Preparing</div>
+						</div>
+						<div class="status-connector {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}"></div>
+
+						<div class="status-step {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+							<div class="status-icon">
+								<i class="fa fa-check"></i>
+							</div>
+							<div class="status-label">Ready</div>
+						</div>
+						<div class="status-connector {% if order.status == 'Completed' %}active{% endif %}"></div>
+
+						<div class="status-step {% if order.status == 'Completed' %}active{% endif %}">
+							<div class="status-icon">
+								<i class="fa fa-thumbs-up"></i>
+							</div>
+							<div class="status-label">Completed</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Current Status Card -->
+				<div class="current-status-section">
+					<div class="status-card {% if order.status == 'Ready' %}status-ready{% elif order.status == 'Pending' %}status-pending{% elif order.status == 'Preparing' %}status-preparing{% else %}status-completed{% endif %}">
+						<h5>Current Status</h5>
+						<div class="status-badge">{{ order.status }}</div>
+						{% if order.status == 'Ready' %}
+						<p class="status-message">Your order is ready! Please proceed to the counter.</p>
+						{% elif order.status == 'Pending' %}
+						<p class="status-message">Your order has been received. Please wait while we prepare it.</p>
+						{% elif order.status == 'Preparing' %}
+						<p class="status-message">We're preparing your delicious order. Please wait a bit more!</p>
+						{% else %}
+						<p class="status-message">Thank you for your order! Enjoy your meal.</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<!-- Estimated Wait Time -->
+				<div class="wait-time-section">
+					<div class="wait-time-card">
+						<h5>Estimated Wait Time</h5>
+						<div class="wait-time-display">
+							<span class="time-number">{{ estimated_wait }}</span>
+							<span class="time-label">minutes remaining</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Order Items -->
+				<div class="order-items-section">
+					<h5>Your Order Items</h5>
+					<ul class="order-items-list">
+						{% for item in order_items %}
+						<li>
+							<span class="item-name">{{ item.item.name }}</span>
+							<span class="item-qty">x{{ item.quantity }}</span>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+
+				<!-- Refresh Indicator -->
+				<div class="refresh-notice text-center text-muted">
+					<small>
+						<i class="fa fa-refresh"></i> This page automatically updates every 5 seconds
+					</small>
+				</div>
+			</div>
+		</main>
+
+		<!-- Footer Navigation -->
+		<footer class="kiosk-footer">
+			<a href="{% url 'kiosk_menu' %}" class="btn btn-secondary btn-lg">Place Another Order</a>
+			<button id="refresh-btn" class="btn btn-primary btn-lg">
+				<i class="fa fa-refresh"></i> Refresh Status
+			</button>
+		</footer>
+	</div>
+
+	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script>
+		// Refresh status every 5 seconds
+		setInterval(function() {
+			location.reload();
+		}, 5000);
+
+		// Manual refresh button
+		document.getElementById('refresh-btn').addEventListener('click', function() {
+			location.reload();
+		});
+	</script>
+</body>
+</html>

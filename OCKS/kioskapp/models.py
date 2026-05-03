@@ -3,8 +3,9 @@ from django.db import models
 # Create your models here.
 class Order(models.Model):
     ORDER_TYPE = [
-        ('dine_in', 'Dine In'),
         ('take_out', 'Take Out'),
+        ('dine_in', 'Dine In'),
+        ('delivery', 'Delivery'),
     ]
 
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE)
@@ -21,6 +22,8 @@ class MenuItem(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
+    max_quantity = models.PositiveIntegerField(default=99)
     available = models.BooleanField(default=True)
 
 class OrderItem(models.Model):

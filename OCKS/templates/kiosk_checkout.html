@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Checkout - Kiosk</title>
+	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
+	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+</head>
+<body>
+	<div class="kiosk-container">
+		<!-- Header -->
+		<header class="kiosk-header">
+			<div class="kiosk-header-top">
+				<div class="kiosk-title">
+					<h1>Checkout</h1>
+				</div>
+			</div>
+		</header>
+
+		<!-- Main Content -->
+		<main class="kiosk-main checkout-main">
+			<form method="POST" action="{% url 'order_create' %}" class="checkout-form">
+				{% csrf_token %}
+
+				<!-- Order Type Selection -->
+				<div class="checkout-section">
+					<h3>Order Type</h3>
+					<div class="option-grid">
+						<label class="order-type-option">
+							<input type="radio" name="order_type" value="take_out" required checked>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-shopping-bag"></i>
+								</div>
+								<h5>Take Out</h5>
+								<p>Pick up your order at the counter</p>
+							</div>
+						</label>
+						<label class="order-type-option">
+							<input type="radio" name="order_type" value="delivery" required>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-truck"></i>
+								</div>
+								<h5>Delivery</h5>
+								<p>Deliver to your location</p>
+							</div>
+						</label>
+					</div>
+				</div>
+
+				<!-- Payment Method Selection -->
+				<div class="checkout-section">
+					<h3>Payment Method</h3>
+					<div class="option-grid">
+						<label class="payment-option">
+							<input type="radio" name="payment_method" value="cash" required>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-money"></i>
+								</div>
+								<h5>Cash</h5>
+								<p>Pay with cash</p>
+							</div>
+						</label>
+						<label class="payment-option">
+							<input type="radio" name="payment_method" value="card" required>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-credit-card"></i>
+								</div>
+								<h5>Card</h5>
+								<p>Pay with credit/debit card</p>
+							</div>
+						</label>
+						<label class="payment-option disabled">
+							<input type="radio" name="payment_method" value="gcash" disabled>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-mobile"></i>
+								</div>
+								<h5>E-Wallet</h5>
+								<p class="text-danger">Coming Soon</p>
+							</div>
+						</label>
+					</div>
+				</div>
+
+				<!-- Order Summary -->
+				<div class="checkout-section order-summary">
+					<h3>Order Summary</h3>
+					<div class="summary-box">
+						<div class="summary-row">
+							<span>Subtotal:</span>
+							<span>₱{{ cart_total }}</span>
+						</div>
+						<div class="summary-row">
+							<span>Tax (12%):</span>
+							<span>₱<span id="tax">0.00</span></span>
+						</div>
+						<div class="summary-row total">
+							<strong>Total Amount:</strong>
+							<strong>₱<span id="final-total">{{ cart_total }}</span></strong>
+						</div>
+					</div>
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="checkout-actions">
+					<a href="{% url 'kiosk_cart' %}" class="btn btn-secondary btn-lg">Back</a>
+					<button type="submit" class="btn btn-success btn-lg" id="confirm-order-btn">
+						<i class="fa fa-check"></i> Confirm Order
+					</button>
+				</div>
+			</form>
+		</main>
+	</div>
+
+	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script>
+		// Payment option selection styling
+		document.querySelectorAll('.payment-option input, .order-type-option input').forEach(radio => {
+			radio.addEventListener('change', function() {
+				const parentLabel = this.closest('label');
+				parentLabel.parentElement.querySelectorAll('label').forEach(label => {
+					label.classList.remove('selected');
+				});
+				if (this.checked && !this.disabled) {
+					parentLabel.classList.add('selected');
+				}
+			});
+		});
+
+		// Calculate totals
+		function updateTotals() {
+			const subtotal = parseFloat('{{ cart_total }}');
+			const tax = subtotal * 0.12;
+			const total = subtotal + tax;
+			document.getElementById('tax').textContent = tax.toFixed(2);
+			document.getElementById('final-total').textContent = total.toFixed(2);
+		}
+
+		// Form validation
+		document.getElementById('confirm-order-btn').addEventListener('click', function(e) {
+			const orderType = document.querySelector('input[name="order_type"]:checked');
+			const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+			
+			if (!orderType || !paymentMethod) {
+				e.preventDefault();
+				alert('Please select both order type and payment method');
+			}
+		});
+
+		updateTotals();
+	</script>
+</body>
+</html>
