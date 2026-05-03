@@ -1,0 +1,6 @@
+Django==5.2.12
+qrcode[pil]==7.4.2
+sqlparse==0.5.5
+asgiref==3.11.1
+django-widget-tweaks==1.5.1
+tzdata==2025.3

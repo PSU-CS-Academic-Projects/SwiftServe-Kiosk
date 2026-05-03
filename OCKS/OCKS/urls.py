@@ -16,11 +16,35 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from kioskapp.views import HomePageView
+from django.conf import settings
+from django.conf.urls.static import static
+from kioskapp.views import (
+    HomePageView, KioskMenuView, KioskCartView, KioskCheckoutView,
+    OrderCreateView, OrderStatusView, AdminOrdersDashboardView,
+    add_to_cart, remove_from_cart, update_cart_item, update_order_status
+)
 from kioskapp import views
 
 urlpatterns = [
+    # Admin (custom first, then built-in)
+    path('admin/orders/', AdminOrdersDashboardView.as_view(), name='admin_orders'),
     path('admin/', admin.site.urls),
     path('', views.HomePageView.as_view(), name='home'),
-
+    
+    # Kiosk workflow
+    path('kiosk/menu/', KioskMenuView.as_view(), name='kiosk_menu'),
+    path('kiosk/cart/', KioskCartView.as_view(), name='kiosk_cart'),
+    path('kiosk/checkout/', KioskCheckoutView.as_view(), name='kiosk_checkout'),
+    path('kiosk/order/create/', OrderCreateView.as_view(), name='order_create'),
+    path('kiosk/order/<int:pk>/status/', OrderStatusView.as_view(), name='order_status'),
+    
+    # AJAX API endpoints
+    path('api/cart/add/', add_to_cart, name='add_to_cart'),
+    path('api/cart/remove/', remove_from_cart, name='remove_from_cart'),
+    path('api/cart/update/', update_cart_item, name='update_cart'),
+    path('api/order/status/', update_order_status, name='update_order_status'),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
