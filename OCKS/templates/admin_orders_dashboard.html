@@ -51,21 +51,64 @@
 						<div class="stat-number">{{ ready_count }}</div>
 					</div>
 				</div>
+				<div class="stat-card">
+					<div class="stat-icon completed">
+						<i class="fa fa-flag-checkered"></i>
+					</div>
+					<div class="stat-content">
+						<h5>Completed Orders</h5>
+						<div class="stat-number">{{ completed_count }}</div>
+					</div>
+				</div>
 			</div>
 
 			<!-- Filters -->
 			<div class="filters-section">
 				<form method="GET" class="filter-form">
-					<label>Filter by Status:</label>
-					<select name="status" class="form-control" onchange="this.form.submit()">
-						<option value="">All Orders</option>
-						{% for status in statuses %}
-						<option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>
-							{{ status }}
-						</option>
-						{% endfor %}
-					</select>
+					<div class="filter-field">
+						<label for="status-filter">Filter by Status</label>
+						<select id="status-filter" name="status" class="form-control" onchange="this.form.submit()">
+							<option value="">All Orders</option>
+							{% for status in statuses %}
+							<option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>{{ status }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="filter-field">
+						<label for="payment-filter">Filter by Payment</label>
+						<select id="payment-filter" name="payment_status" class="form-control" onchange="this.form.submit()">
+							<option value="">All Payments</option>
+							{% for payment_status in payment_statuses %}
+							<option value="{{ payment_status }}" {% if selected_payment_status|lower == payment_status|lower %}selected{% endif %}>{{ payment_status }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="filter-actions">
+						<a href="{% url 'admin_orders' %}" class="btn btn-outline-secondary btn-sm">Clear Filters</a>
+					</div>
+					<div class="filter-field filter-search-field">
+						<label for="search-orders">Search Orders</label>
+						<div class="input-group">
+							<input type="text" id="search-orders" name="search" class="form-control" placeholder="Search by order ID, queue #, type, payment..." value="{{ search_query }}">
+							<div class="input-group-append">
+								<button class="btn btn-primary" type="submit">Search</button>
+							</div>
+						</div>
+					</div>
 				</form>
+				{% if search_query or request.GET.status or selected_payment_status %}
+				<div class="filter-summary">
+					{% if search_query %}
+					<span class="filter-chip">Search: {{ search_query }}</span>
+					{% endif %}
+					{% if request.GET.status %}
+					<span class="filter-chip">Status: {{ request.GET.status }}</span>
+					{% endif %}
+					{% if selected_payment_status %}
+					<span class="filter-chip">Payment: {{ selected_payment_status }}</span>
+					{% endif %}
+				</div>
+				{% endif %}
 			</div>
 
 			<!-- Orders Table -->
@@ -97,31 +140,49 @@
 								</span>
 							</td>
 							<td>
-								<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#items-{{ order.id }}">
+								<button class="btn btn-sm btn-outline-secondary view-items-btn" type="button" data-order-id="{{ order.id }}">
 									View Items
 								</button>
-								<div class="collapse mt-2" id="items-{{ order.id }}">
-									<ul class="small">
+								<div class="d-none order-items-source" data-order-id="{{ order.id }}">
+									<div class="view-items-box small">
+										<div class="view-items-head">
+											<span>Item</span>
+											<span>Qty</span>
+											<span>Subtotal</span>
+										</div>
 										{% for item in order.orderitem_set.all %}
-										<li>{{ item.item.name }} x{{ item.quantity }} - ₱{{ item.subtotal }}</li>
+										<div class="view-items-row">
+											<span class="item-name">{{ item.item.name }}</span>
+											<span class="item-qty">x{{ item.quantity }}</span>
+											<span class="item-subtotal">₱{{ item.subtotal }}</span>
+										</div>
+										{% empty %}
+										<div class="view-items-empty">No items found for this order.</div>
 										{% endfor %}
-									</ul>
+									</div>
 								</div>
 							</td>
 							<td>₱{{ order.total_price }}</td>
 							<td>
-								<select class="form-select form-select-sm status-select" data-order-id="{{ order.id }}">
+								<select class="form-control form-control-sm status-select" data-order-id="{{ order.id }}">
 									<option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
 									<option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
-									<option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready</option>
+									<option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>{% if order.order_type == 'take_out' %}Ready for Take Out{% elif order.order_type == 'dine_in' %}Ready for Dine In{% else %}Ready{% endif %}</option>
 									<option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
 								</select>
 							</td>
 							<td>
 								{% with payment=order.payment %}
-								<span class="badge {% if payment.payment_status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
-									{{ payment.get_method_display }}: {{ payment.payment_status }}
-								</span>
+								<div class="payment-control-row">
+									<span class="badge {% if payment.payment_status|lower == 'pending' %}bg-warning{% else %}bg-success{% endif %}">
+										{{ payment.get_method_display }}
+									</span>
+									<select class="form-control form-control-sm payment-status-select" data-order-id="{{ order.id }}">
+										{% for payment_status in payment_statuses %}
+										<option value="{{ payment_status }}" {% if payment.payment_status|lower == payment_status|lower %}selected{% endif %}>{{ payment_status }}</option>
+										{% endfor %}
+									</select>
+								</div>
 								{% endwith %}
 							</td>
 							<td>
@@ -143,6 +204,31 @@
 						{% endfor %}
 					</tbody>
 				</table>
+				{% if is_paginated %}
+				<nav aria-label="Orders pagination" class="mt-3">
+					<ul class="pagination justify-content-center">
+						{% if page_obj.has_previous %}
+						<li class="page-item">
+							<a class="page-link" href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.previous_page_number }}">Previous</a>
+						</li>
+						{% else %}
+						<li class="page-item disabled"><span class="page-link">Previous</span></li>
+						{% endif %}
+
+						<li class="page-item disabled">
+							<span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+						</li>
+
+						{% if page_obj.has_next %}
+						<li class="page-item">
+							<a class="page-link" href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.next_page_number }}">Next</a>
+						</li>
+						{% else %}
+						<li class="page-item disabled"><span class="page-link">Next</span></li>
+						{% endif %}
+					</ul>
+				</nav>
+				{% endif %}
 			</div>
 		</main>
 	</div>
@@ -153,13 +239,15 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">Order Details</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
 				</div>
 				<div class="modal-body" id="orderModalBody">
 					<!-- Order details will be loaded here -->
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 					<button type="button" class="btn btn-primary" id="print-modal-btn">Print</button>
 				</div>
 			</div>
@@ -167,100 +255,15 @@
 	</div>
 
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
+	<script src="{% static 'js/popper.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script>
-		function getCookie(name) {
-			let cookieValue = null;
-			if (document.cookie && document.cookie !== '') {
-				const cookies = document.cookie.split(';');
-				for (let i = 0; i < cookies.length; i++) {
-					const cookie = cookies[i].trim();
-					if (cookie.substring(0, name.length + 1) === (name + '=')) {
-						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-						break;
-					}
-				}
-			}
-			return cookieValue;
-		}
-
-		// Status change handler
-		document.querySelectorAll('.status-select').forEach(select => {
-			select.addEventListener('change', function() {
-				const orderId = this.dataset.orderId;
-				const newStatus = this.value;
-				
-				fetch('{% url "update_order_status" %}', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-CSRFToken': getCookie('csrftoken')
-					},
-					body: JSON.stringify({
-						order_id: orderId,
-						status: newStatus
-					})
-				})
-				.then(response => response.json())
-				.then(data => {
-					if (data.success) {
-						// Show success message
-						const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-						row.classList.add('updated');
-						setTimeout(() => {
-							row.classList.remove('updated');
-						}, 2000);
-					}
-				})
-				.catch(error => console.error('Error:', error));
-			});
-		});
-
-		// View order details
-		document.querySelectorAll('.view-order').forEach(btn => {
-			btn.addEventListener('click', function() {
-				const orderId = this.dataset.orderId;
-				const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-				
-				// Get order data from row
-				const queueNum = row.querySelector('td:first-child').textContent.trim();
-				const orderType = row.querySelector('td:nth-child(3) .badge').textContent;
-				const total = row.querySelector('td:nth-child(5)').textContent;
-				const status = row.querySelector('td:nth-child(6) .form-select').value;
-				const time = row.querySelector('td:nth-child(8)').textContent;
-				
-				const modal = document.getElementById('orderModal');
-				const modalBody = document.getElementById('orderModalBody');
-				
-				// You could fetch full order details here from an API endpoint
-				modalBody.innerHTML = `
-					<div class="order-detail-info">
-						<p><strong>Queue Number:</strong> ${queueNum}</p>
-						<p><strong>Order Type:</strong> ${orderType}</p>
-						<p><strong>Total:</strong> ${total}</p>
-						<p><strong>Status:</strong> ${status}</p>
-						<p><strong>Time:</strong> ${time}</p>
-					</div>
-				`;
-				
-				const modalInstance = new bootstrap.Modal(modal);
-				modalInstance.show();
-			});
-		});
-
-		// Print order
-		document.querySelectorAll('.print-order').forEach(btn => {
-			btn.addEventListener('click', function() {
-				const orderId = this.dataset.orderId;
-				window.print();
-			});
-		});
-
-		// Auto-refresh dashboard every 10 seconds
-		setInterval(function() {
-			location.reload();
-		}, 10000);
+	// expose backend URLs for shared script
+	window.updateOrderUrl = '{% url "update_order_status" %}';
+	window.updatePaymentUrl = '{% url "update_payment_status" %}';
 	</script>
+	<script src="{% static 'js/dashboard-common.js' %}"></script>
+
 	<style>
 		.admin-container {
 			display: flex;
@@ -293,6 +296,60 @@
 			padding: 20px;
 		}
 
+		.filter-form {
+			display: grid;
+				grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) auto minmax(320px, 1fr);
+				gap: 14px;
+			align-items: center;
+		}
+
+		.filter-actions {
+			display: inline-flex;
+			gap: 8px;
+			align-items: center;
+			justify-content: flex-start;
+				align-self: end;
+				padding-bottom: 1px;
+		}
+
+		.filter-field {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.filter-search-field .input-group {
+			flex-wrap: nowrap;
+				width: 100%;
+		}
+
+		.filter-search-field .form-control,
+			.filter-field .form-control {
+					height: calc(2rem + 2px);
+		}
+
+				.filter-search-field {
+					min-width: 0;
+			}
+
+		.filter-summary {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			margin-top: 12px;
+		}
+
+		.filter-chip {
+			display: inline-flex;
+			align-items: center;
+			padding: 6px 10px;
+			border-radius: 999px;
+			background: #eef2ff;
+			color: #364fc7;
+			font-size: 0.85rem;
+			font-weight: 600;
+		}
+
 		.stats-section {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -323,6 +380,7 @@
 		.stat-icon.pending { background-color: #ffc107; }
 		.stat-icon.preparing { background-color: #ff6b6b; }
 		.stat-icon.ready { background-color: #51cf66; }
+		.stat-icon.completed { background-color: #339af0; }
 
 		.stat-number {
 			font-size: 32px;
@@ -343,11 +401,83 @@
 
 		.status-select {
 			cursor: pointer;
+			min-width: 180px;
+		}
+
+		.payment-status-select {
+			min-width: 140px;
+		}
+
+		.payment-control-row {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.view-items-box {
+			border: 1px solid #e9ecef;
+			border-radius: 6px;
+			padding: 8px;
+			background: #fff;
+			max-width: 340px;
+		}
+
+		.order-detail-info {
+			padding: 12px 14px;
+			border: 1px solid #e9ecef;
+			border-radius: 8px;
+			background: #f8f9fa;
+		}
+
+		.view-items-head,
+		.view-items-row {
+			display: grid;
+			grid-template-columns: 1fr 56px 90px;
+			column-gap: 8px;
+			align-items: center;
+		}
+
+		.view-items-head {
+			font-weight: 600;
+			padding-bottom: 6px;
+			margin-bottom: 6px;
+			border-bottom: 1px solid #f1f3f5;
+			color: #495057;
+		}
+
+		.view-items-row {
+			padding: 3px 0;
+		}
+
+		.item-name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.item-qty,
+		.item-subtotal {
+			text-align: right;
+		}
+
+		.view-items-empty {
+			color: #6c757d;
+			font-style: italic;
 		}
 
 		@media print {
 			.admin-header, .filters-section, .btn {
 				display: none !important;
+			}
+		}
+
+		@media (max-width: 991px) {
+			.filter-form {
+				grid-template-columns: 1fr;
+			}
+
+			.filter-actions {
+				justify-content: flex-start;
 			}
 		}
 	</style>

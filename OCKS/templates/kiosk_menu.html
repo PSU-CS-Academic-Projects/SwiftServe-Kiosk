@@ -37,7 +37,7 @@
 		<!-- Header -->
 		<header class="kiosk-header">
 			<div class="kiosk-header-top">
-				<div class="kiosk-title">
+				<div class="kiosk-title" id="home-logo" style="cursor: pointer;" title="Click to return home">
 					<h1>Klassy Cafe</h1>
 					<p>Digital Ordering Kiosk</p>
 				</div>
@@ -168,10 +168,179 @@
 		</div>
 	</div>
 
+	<!-- Custom Confirmation Modal -->
+	<div id="confirmationModal" class="custom-confirmation-modal" style="display: none;">
+		<div class="confirmation-overlay"></div>
+		<div class="confirmation-dialog">
+			<div class="confirmation-header">
+				<i class="fa fa-exclamation-circle"></i>
+				<h3>Confirm Action</h3>
+			</div>
+			<div class="confirmation-body">
+				<p id="confirmationMessage"></p>
+			</div>
+			<div class="confirmation-footer">
+				<button id="confirmBtn" class="btn btn-primary">Yes, Continue</button>
+				<button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.custom-confirmation-modal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 10000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.confirmation-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+			backdrop-filter: blur(2px);
+		}
+
+		.confirmation-dialog {
+			position: relative;
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			max-width: 420px;
+			width: 90%;
+			overflow: hidden;
+			animation: slideIn 0.3s ease-out;
+		}
+
+		@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateY(-30px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.confirmation-header {
+			background: linear-gradient(135deg, #ff6b4a 0%, #fb5849 100%);
+			color: white;
+			padding: 25px 20px;
+			text-align: center;
+		}
+
+		.confirmation-header i {
+			font-size: 32px;
+			display: block;
+			margin-bottom: 10px;
+		}
+
+		.confirmation-header h3 {
+			margin: 0;
+			font-size: 20px;
+			font-weight: 700;
+		}
+
+		.confirmation-body {
+			padding: 25px 20px;
+			text-align: center;
+		}
+
+		.confirmation-body p {
+			margin: 0;
+			color: #555;
+			font-size: 15px;
+			line-height: 1.6;
+		}
+
+		.confirmation-footer {
+			padding: 15px 20px;
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			border-top: 1px solid #e0e0e0;
+		}
+
+		.confirmation-footer .btn {
+			flex: 1;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.confirmation-footer .btn-primary {
+			background: linear-gradient(135deg, #ff6b4a 0%, #fb5849 100%);
+			color: white;
+		}
+
+		.confirmation-footer .btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 20px rgba(251, 88, 73, 0.3);
+		}
+
+		.confirmation-footer .btn-secondary {
+			background-color: #f0f0f0;
+			color: #333;
+			border: 1px solid #e0e0e0;
+		}
+
+		.confirmation-footer .btn-secondary:hover {
+			background-color: #e0e0e0;
+		}
+	</style>
+
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/dashboard-common.js' %}"></script>
 	{{ initial_cart|json_script:"initial-cart-data" }}
 	<script>
+		// Custom confirmation modal handler
+		function showConfirmation(message, onConfirm) {
+			const modal = document.getElementById('confirmationModal');
+			const messageEl = document.getElementById('confirmationMessage');
+			const confirmBtn = document.getElementById('confirmBtn');
+			const cancelBtn = document.getElementById('cancelBtn');
+
+			messageEl.textContent = message;
+			modal.style.display = 'flex';
+
+			function cleanup() {
+				modal.style.display = 'none';
+				confirmBtn.removeEventListener('click', handleConfirm);
+				cancelBtn.removeEventListener('click', handleCancel);
+			}
+
+			function handleConfirm() {
+				cleanup();
+				onConfirm(true);
+			}
+
+			function handleCancel() {
+				cleanup();
+				onConfirm(false);
+			}
+
+			confirmBtn.addEventListener('click', handleConfirm);
+			cancelBtn.addEventListener('click', handleCancel);
+
+			// Close on overlay click
+			modal.querySelector('.confirmation-overlay').addEventListener('click', handleCancel);
+		}
+
 		const initialCartData = document.getElementById('initial-cart-data');
 		const cartBtn = document.getElementById('cart-btn');
 		const proceedBtn = document.getElementById('proceed-to-cart-btn');
@@ -180,6 +349,28 @@
 		const cartCountBadge = document.getElementById('cart-count');
 		let cart = initialCartData ? JSON.parse(initialCartData.textContent || '{}') : {};
 		const cartPreview = document.getElementById('cart-preview');
+
+		// Logo click handler - with cart confirmation
+		const homeLogo = document.getElementById('home-logo');
+		if (homeLogo) {
+			homeLogo.addEventListener('click', function() {
+				const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+				
+				if (totalItems > 0) {
+					showConfirmation(
+						'You have items in your cart. Are you sure you want to go back to home? Your cart will be cleared.',
+						function(confirmed) {
+							if (confirmed) {
+								window.location.href = '{% url "home_page" %}';
+							}
+						}
+					);
+				} else {
+					// No items, go directly home
+					window.location.href = '{% url "home_page" %}';
+				}
+			});
+		}
 
 		// Category filtering
 		categoryBtns.forEach(btn => {
@@ -342,20 +533,7 @@
 			});
 		}
 
-		function getCookie(name) {
-			let cookieValue = null;
-			if (document.cookie && document.cookie !== '') {
-				const cookies = document.cookie.split(';');
-				for (let i = 0; i < cookies.length; i++) {
-					const cookie = cookies[i].trim();
-					if (cookie.substring(0, name.length + 1) === (name + '=')) {
-						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-						break;
-					}
-				}
-			}
-			return cookieValue;
-		}
+
 
 		// Initialize cart from session
 		updateCartUI();

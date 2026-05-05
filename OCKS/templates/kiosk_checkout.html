@@ -25,10 +25,18 @@
 		<main class="kiosk-main checkout-main">
 			<form method="POST" action="{% url 'order_create' %}" class="checkout-form">
 				{% csrf_token %}
+				{% if checkout_error %}
+				<div class="alert alert-danger" role="alert">{{ checkout_error }}</div>
+				{% endif %}
 
 				<!-- Order Type Selection -->
 				<div class="checkout-section">
 					<h3>Order Type</h3>
+					{% if dine_in_available %}
+					<p class="text-success mb-3"><strong>Dine-in Status:</strong> Available{% if dine_in_wait_minutes > 0 %} (Estimated wait: {{ dine_in_wait_minutes }} min){% endif %}</p>
+					{% else %}
+					<p class="text-danger mb-3"><strong>Dine-in Status:</strong> Currently full. Please choose Take Out or Delivery.</p>
+					{% endif %}
 					<div class="option-grid">
 						<label class="order-type-option">
 							<input type="radio" name="order_type" value="take_out" required checked>
@@ -41,6 +49,16 @@
 							</div>
 						</label>
 						<label class="order-type-option">
+							<input type="radio" name="order_type" value="dine_in" required {% if not dine_in_available %}disabled{% endif %}>
+							<div class="option-card">
+								<div class="option-icon">
+									<i class="fa fa-cutlery"></i>
+								</div>
+								<h5>Dine In</h5>
+								<p>{% if dine_in_available %}Enjoy your order inside the cafe{% else %}Temporarily unavailable{% endif %}</p>
+							</div>
+						</label>
+						<label class="order-type-option">
 							<input type="radio" name="order_type" value="delivery" required>
 							<div class="option-card">
 								<div class="option-icon">
@@ -50,6 +68,17 @@
 								<p>Deliver to your location</p>
 							</div>
 						</label>
+					</div>
+					<div id="dine-in-details" class="mt-3" style="display:none;">
+						<label for="party-size" class="form-label"><strong>Party Size</strong></label>
+						<select id="party-size" name="party_size" class="form-control">
+							<option value="">Select number of guests</option>
+							{% for size in '123456789'|make_list %}
+							{% if forloop.counter <= dine_in_max_party_size %}
+							<option value="{{ forloop.counter }}">{{ forloop.counter }} {% if forloop.counter == 1 %}guest{% else %}guests{% endif %}</option>
+							{% endif %}
+							{% endfor %}
+						</select>
 					</div>
 				</div>
 
@@ -149,14 +178,42 @@
 		document.getElementById('confirm-order-btn').addEventListener('click', function(e) {
 			const orderType = document.querySelector('input[name="order_type"]:checked');
 			const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+			const partySize = document.getElementById('party-size');
 			
 			if (!orderType || !paymentMethod) {
 				e.preventDefault();
 				alert('Please select both order type and payment method');
+				return;
+			}
+
+			if (orderType.value === 'dine_in' && (!partySize || !partySize.value)) {
+				e.preventDefault();
+				alert('Please select party size for dine-in.');
 			}
 		});
 
+		function toggleDineInDetails() {
+			const selected = document.querySelector('input[name="order_type"]:checked');
+			const details = document.getElementById('dine-in-details');
+			const partySize = document.getElementById('party-size');
+			if (!details || !partySize) return;
+
+			if (selected && selected.value === 'dine_in' && !selected.disabled) {
+				details.style.display = 'block';
+				partySize.required = true;
+			} else {
+				details.style.display = 'none';
+				partySize.required = false;
+				partySize.value = '';
+			}
+		}
+
+		document.querySelectorAll('input[name="order_type"]').forEach(radio => {
+			radio.addEventListener('change', toggleDineInDetails);
+		});
+
 		updateTotals();
+		toggleDineInDetails();
 	</script>
 </body>
 </html>

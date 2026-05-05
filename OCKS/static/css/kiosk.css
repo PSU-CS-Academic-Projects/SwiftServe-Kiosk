@@ -344,12 +344,14 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 20px;
+    align-items: stretch;
 }
 
 .order-type-option,
 .payment-option {
     position: relative;
     cursor: pointer;
+    display: flex;
 }
 
 .order-type-option input,
@@ -364,7 +366,8 @@ body {
     padding: 25px;
     text-align: center;
     transition: var(--transition);
-    min-height: 150px;
+    min-height: 180px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;

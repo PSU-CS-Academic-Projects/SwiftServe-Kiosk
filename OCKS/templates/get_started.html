@@ -2,7 +2,214 @@
 {% load static %}
 
 {% block content %}
+<style>
+  .session-greeting {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 1050;
+    width: min(320px, calc(100vw - 40px));
+    background-color: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    text-align: left;
+    animation: greetingSlideIn 0.35s ease-out both;
+  }
+
+  .session-greeting.hide {
+    animation: greetingSlideOut 0.45s ease-in forwards;
+  }
+
+  .session-greeting p {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .session-greeting small {
+    color: #558b2f;
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  .my-orders-section {
+    margin-top: 28px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    text-align: left;
+  }
+
+  .my-orders-title {
+    margin: 0 0 12px 0;
+    color: #2a2a2a;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .my-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .my-orders-table th,
+  .my-orders-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+  }
+
+  .my-orders-table th {
+    color: #666;
+    font-weight: 600;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .my-orders-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .my-order-status {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .my-order-status.pending { background: #ffc107; color: #1f2328; }
+  .my-order-status.preparing { background: #ff6b6b; }
+  .my-order-status.ready { background: #51cf66; }
+  .my-order-status.completed { background: #339af0; }
+  .my-order-status.cancelled { background: #868e96; }
+
+  .my-order-track-btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 88, 73, 0.35);
+    color: #fb5849;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .my-order-track-btn:hover {
+    color: #fff;
+    background: #fb5849;
+    text-decoration: none;
+  }
+
+  .my-orders-empty {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.92rem;
+  }
+
+  .cancel-policy-note {
+    margin: 10px 0 0 0;
+    color: #6c757d;
+    font-size: 0.84rem;
+  }
+
+  .my-order-cancel-btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 107, 107, 0.45);
+    color: #ff6b6b;
+    background: #fff;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .my-order-cancel-btn:hover {
+    color: #fff;
+    background: #ff6b6b;
+    text-decoration: none;
+  }
+
+  .my-order-cancel-btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .my-order-note {
+    margin-top: 4px;
+    color: #6c757d;
+    font-size: 0.78rem;
+  }
+
+  .cancel-feedback {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  .cancel-feedback.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+  }
+
+  .cancel-feedback.warning {
+    background: #fff8e1;
+    color: #8d6e00;
+    border-left: 4px solid #ffc107;
+  }
+
+  @keyframes greetingSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes greetingSlideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-120%);
+    }
+  }
+</style>
+
+{% if show_welcome_card %}
+<div class="session-greeting" id="sessionGreeting">
+  <p>
+    <i class="fa fa-check-circle"></i> Welcome back, <strong>{{ customer_name }}</strong>!
+  </p>
+</div>
+{% endif %}
+
 <div class="container text-center my-5">
+
+  {% if cancel_feedback %}
+  <div class="cancel-feedback {{ cancel_feedback.type|default:'success' }}">
+    {{ cancel_feedback.text }}
+  </div>
+  {% endif %}
+
   <h1 class="display-4">Get Started</h1>
   <p class="lead">Explore our menu. Tap Get Started to place an order.</p>
 
@@ -31,6 +238,51 @@
       <span class="sr-only">Next</span>
     </a>
   </div>
+
+  <div class="my-orders-section">
+    <h3 class="my-orders-title">My Order Status</h3>
+    {% if my_orders %}
+    <div class="table-responsive">
+      <table class="my-orders-table">
+        <thead>
+          <tr>
+            <th>Queue #</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in my_orders %}
+          <tr>
+            <td>
+              {% if order.queue_number > 999 %}
+                Q-{{ order.queue_number }}
+              {% else %}
+                Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
+              {% endif %}
+            </td>
+            <td>{{ order.created_at|date:"M d, H:i" }}</td>
+            <td>
+              <span class="my-order-status {{ order.status|lower }}">{{ order.status }}</span>
+            </td>
+            <td class="text-right">
+              <a class="my-order-track-btn" href="{% url 'order_status' order.id %}">Track</a>
+              <form method="post" action="{% url 'cancel_customer_order' order.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="my-order-cancel-btn" {% if not order.can_customer_cancel %}disabled{% endif %} onclick="return confirm('Cancel order #{{ order.id }}?');">Cancel</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="cancel-policy-note">Cancellation is allowed only while status is Pending and within {{ cancel_window_seconds }} seconds from order placement.</p>
+    {% else %}
+    <p class="my-orders-empty">No orders yet. Place your first order to see live status updates here.</p>
+    {% endif %}
+  </div>
 </div>
 
 <script>
@@ -39,6 +291,21 @@
   try{
     $('.carousel').carousel({ interval: 3000 });
   }catch(e){}
+})();
+
+// Keep the greeting visible briefly, then slide it away to the left
+(function () {
+  var greeting = document.getElementById('sessionGreeting');
+  if (!greeting) return;
+
+  setTimeout(function () {
+    greeting.classList.add('hide');
+    setTimeout(function () {
+      if (greeting && greeting.parentNode) {
+        greeting.parentNode.removeChild(greeting);
+      }
+    }, 500);
+  }, 4500);
 })();
 </script>
 

@@ -22,7 +22,8 @@ from django.conf.urls.static import static
 from kioskapp.views import (
     HomePageView, GetStartedView, KioskMenuView, KioskCartView, KioskCheckoutView,
     OrderCreateView, OrderStatusView, AdminOrdersDashboardView,
-    add_to_cart, remove_from_cart, update_cart_item, update_order_status
+    add_to_cart, remove_from_cart, update_cart_item, update_order_status, update_payment_status,
+    CustomerLoginView, CustomerRegisterView, customer_logout, cancel_customer_order
 )
 from kioskapp import views
 
@@ -30,9 +31,14 @@ urlpatterns = [
     # Admin (custom first, then built-in)
     path('admin/orders/', AdminOrdersDashboardView.as_view(), name='admin_orders'),
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(pattern_name='home_page', permanent=False), name='home'),
+    path('', RedirectView.as_view(pattern_name='customer_login', permanent=False), name='home'),
     path('home/', views.GetStartedView.as_view(), name='home_page'),
     path('get-started/', views.GetStartedView.as_view(), name='get_started'),
+    
+    # Customer authentication
+    path('customer/login/', CustomerLoginView.as_view(), name='customer_login'),
+    path('customer/register/', CustomerRegisterView.as_view(), name='customer_register'),
+    path('customer/logout/', customer_logout, name='customer_logout'),
     
     # Kiosk workflow
     path('kiosk/menu/', KioskMenuView.as_view(), name='kiosk_menu'),
@@ -40,12 +46,14 @@ urlpatterns = [
     path('kiosk/checkout/', KioskCheckoutView.as_view(), name='kiosk_checkout'),
     path('kiosk/order/create/', OrderCreateView.as_view(), name='order_create'),
     path('kiosk/order/<int:pk>/status/', OrderStatusView.as_view(), name='order_status'),
+    path('kiosk/order/<int:pk>/cancel/', cancel_customer_order, name='cancel_customer_order'),
     
     # AJAX API endpoints
     path('api/cart/add/', add_to_cart, name='add_to_cart'),
     path('api/cart/remove/', remove_from_cart, name='remove_from_cart'),
     path('api/cart/update/', update_cart_item, name='update_cart'),
     path('api/order/status/', update_order_status, name='update_order_status'),
+    path('api/payment/status/', update_payment_status, name='update_payment_status'),
 ]
 
 # Serve media files in development

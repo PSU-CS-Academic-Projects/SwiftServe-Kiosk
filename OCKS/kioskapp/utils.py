@@ -6,11 +6,32 @@ from kioskapp.models import Order
 import base64
 
 def generate_queue_number():
-    """Generate a unique queue number based on today's date and current order count"""
-    today = datetime.now().strftime("%d%m")  # DDMM format
-    today_orders = Order.objects.filter(created_at__date=datetime.now().date()).count()
-    queue_num = today_orders + 1
-    return f"Q-{today}{queue_num:03d}"
+    """Generate the next integer sequence for today's queue.
+
+    This function is backward compatible with legacy stored values that encoded
+    the date prefix into the integer (e.g. DDMMNNN). It inspects today's
+    orders, extracts the 3-digit sequence portion when present, and returns the
+    next sequence as an int (1,2,3...). Templates will prepend the date when
+    rendering the queue display.
+    """
+    today = datetime.now()
+    today_orders = Order.objects.filter(created_at__date=today.date()).values_list('queue_number', flat=True)
+
+    max_seq = 0
+    for q in today_orders:
+        try:
+            q_int = int(q)
+        except Exception:
+            continue
+        if q_int > 999:
+            seq = q_int % 1000
+        else:
+            seq = q_int
+        if seq > max_seq:
+            max_seq = seq
+
+    next_seq = max_seq + 1
+    return next_seq
 
 def calculate_estimated_wait_time():
     """Calculate estimated wait time based on pending orders"""

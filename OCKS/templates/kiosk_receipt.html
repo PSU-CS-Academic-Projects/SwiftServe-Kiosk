@@ -28,7 +28,11 @@
 				<div class="queue-section">
 					<p class="queue-label">Your Queue Number</p>
 					<div class="queue-number">
-						Q-{{ order.queue_number|stringformat:"03d" }}
+						{% if order.queue_number > 999 %}
+							Q-{{ order.queue_number }}
+						{% else %}
+							Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
+						{% endif %}
 					</div>
 					<p class="queue-message">Please wait for your number to be called</p>
 				</div>
@@ -47,26 +51,40 @@
 				<!-- Order Details -->
 				<div class="receipt-section">
 					<h4>Order Details</h4>
-					<table class="receipt-table">
-						<tbody>
-							<tr>
-								<td><strong>Order Type:</strong></td>
-								<td>{{ order.get_order_type_display }}</td>
-							</tr>
-							<tr>
-								<td><strong>Order ID:</strong></td>
-								<td>#{{ order.id }}</td>
-							</tr>
-							<tr>
-								<td><strong>Order Time:</strong></td>
-								<td>{{ order.created_at|date:"H:i" }}</td>
-							</tr>
-							<tr>
-								<td><strong>Status:</strong></td>
-								<td><span class="badge bg-warning">{{ order.status }}</span></td>
-							</tr>
-						</tbody>
-					</table>
+					<div class="payment-details order-details-list">
+						{% if order.customer %}
+						<div class="detail-row">
+							<span>Customer Name:</span>
+							<span>{{ order.customer.name }}</span>
+						</div>
+						<div class="detail-row">
+							<span>Customer Phone:</span>
+							<span>{{ order.customer.phone_number }}</span>
+						</div>
+						{% endif %}
+						<div class="detail-row">
+							<span>Order Type:</span>
+							<span>{{ order.get_order_type_display }}</span>
+						</div>
+						{% if order.order_type == 'dine_in' and order.party_size %}
+						<div class="detail-row">
+							<span>Party Size:</span>
+							<span>{{ order.party_size }}</span>
+						</div>
+						{% endif %}
+						<div class="detail-row">
+							<span>Order ID:</span>
+							<span>#{{ order.id }}</span>
+						</div>
+						<div class="detail-row">
+							<span>Order Time:</span>
+							<span>{{ order.created_at|date:"H:i" }}</span>
+						</div>
+						<div class="detail-row">
+							<span>Status:</span>
+							<span class="receipt-status-value">{{ order.status }}</span>
+						</div>
+					</div>
 				</div>
 
 				<!-- Items List -->
@@ -115,7 +133,20 @@
 						</div>
 						<div class="detail-row">
 							<span>Payment Status:</span>
-							<span><span class="badge bg-info">{{ payment.payment_status }}</span></span>
+							<span class="receipt-payment-status">{{ payment.payment_status }}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="receipt-section">
+					<div class="payment-details">
+						<div class="detail-row">
+							<span>Cancellation Rule:</span>
+							<span>Pending only, within {{ cancel_window_seconds }}s</span>
+						</div>
+						<div class="detail-row">
+							<span>Refund Rule:</span>
+							<span>{{ refund_note }}</span>
 						</div>
 					</div>
 				</div>
@@ -166,6 +197,30 @@
 			.kiosk-header, .kiosk-footer, #print-btn {
 				display: none !important;
 			}
+		}
+
+		.receipt-status-value {
+			display: inline-block;
+			vertical-align: middle;
+			line-height: 1;
+			font-weight: 600;
+			color: #333;
+			padding: 0;
+			margin: 0;
+		}
+
+		.receipt-payment-status {
+			display: inline-block;
+			vertical-align: middle;
+			line-height: 1;
+			font-weight: 600;
+			color: #333;
+			padding: 0;
+			margin: 0;
+		}
+
+		.receipt-table td:last-child {
+			vertical-align: middle;
 		}
 	</style>
 </body>

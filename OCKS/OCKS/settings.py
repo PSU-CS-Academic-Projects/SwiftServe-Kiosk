@@ -126,3 +126,6 @@ STATICFILES_DIRS = [
 # Media files (User uploads)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# URL to redirect to for login-required views (use Django admin login)
+LOGIN_URL = '/admin/login/'
