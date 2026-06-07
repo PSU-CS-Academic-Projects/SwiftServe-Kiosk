@@ -3,12 +3,15 @@ from django.views.generic.list import ListView
 from django.views.generic import DetailView, TemplateView
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 import json
+import re
+from collections import defaultdict
 from decimal import Decimal
 
 from kioskapp.models import MenuItem, Order, Category, OrderItem, ItemConfiguration, Payment, DineInSettings, Customer
@@ -17,6 +20,17 @@ from kioskapp.utils import generate_queue_number, calculate_estimated_wait_time,
 CANCEL_WINDOW_SECONDS = 90
 ALLOWED_ORDER_STATUSES = ['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled']
 ALLOWED_PAYMENT_STATUSES = ['Pending', 'Paid', 'Refund Requested']
+CATEGORY_DISPLAY_ORDER = ['Desserts', 'Drinks', 'Pasta & Noodles', 'Breads', 'Local specialties', 'Snacks']
+SIZE_SUFFIXES = ('Dwarf', 'Classic', 'Giant', 'Small', 'Medium', 'Large')
+SIZE_ORDER = {name.lower(): index for index, name in enumerate(['Small', 'Dwarf', 'Classic', 'Medium', 'Large', 'Giant'])}
+SIZE_SUFFIX_RE = re.compile(r'^(?P<base>.+?)\s+(?P<size>Dwarf|Classic|Giant|Small|Medium|Large)$', re.IGNORECASE)
+
+
+def category_sort_key(name):
+    try:
+        return CATEGORY_DISPLAY_ORDER.index(name)
+    except ValueError:
+        return len(CATEGORY_DISPLAY_ORDER), name.lower()
 
 
 def get_customer_cancel_state(order):
@@ -37,6 +51,91 @@ def get_order_payment_status(order):
     except Payment.DoesNotExist:
         return 'Pending'
 
+
+def build_menu_groups(menu_items):
+    grouped_variants = defaultdict(list)
+    non_grouped_items = []
+
+    for item in menu_items:
+        match = SIZE_SUFFIX_RE.match(item.name.strip())
+        if match:
+            grouped_variants[(item.category_id, match.group('base').strip())].append(item)
+        else:
+            non_grouped_items.append(item)
+
+    groups = []
+
+    def item_payload(item):
+        return {
+            'id': item.id,
+            'name': item.name,
+            'price': str(item.price),
+            'description': item.description or '',
+            'image_url': item.image.url if item.image else '',
+            'category_id': item.category_id,
+            'category_parent_id': item.category.parent_id if item.category.parent_id else item.category_id,
+        }
+
+    for item in non_grouped_items:
+        groups.append({
+            'type': 'single',
+            'base_name': item.name,
+            'category': item.category,
+            'category_parent_id': item.category.parent_id if item.category.parent_id else item.category_id,
+            'description': item.description or '',
+            'default_variant': item_payload(item),
+            'variants': [item_payload(item)],
+        })
+
+    for (category_id, base_name), variants in grouped_variants.items():
+        if len(variants) < 2:
+            item = variants[0]
+            groups.append({
+                'type': 'single',
+                'base_name': item.name,
+                'category': item.category,
+                'category_parent_id': item.category.parent_id if item.category.parent_id else item.category_id,
+                'description': item.description or '',
+                'default_variant': item_payload(item),
+                'variants': [item_payload(item)],
+            })
+            continue
+
+        variants_payload = []
+        for item in variants:
+            size_match = SIZE_SUFFIX_RE.match(item.name.strip())
+            size_name = size_match.group('size').title() if size_match else item.name
+            variants_payload.append({
+                'id': item.id,
+                'name': item.name,
+                'size_name': size_name,
+                'price': str(item.price),
+                'description': item.description or '',
+                'image_url': item.image.url if item.image else '',
+                'category_id': item.category_id,
+                'category_parent_id': item.category.parent_id if item.category.parent_id else item.category_id,
+            })
+
+        variants_payload.sort(key=lambda payload: SIZE_ORDER.get(payload['size_name'].lower(), 99))
+        default_variant = next((variant for variant in variants_payload if variant['size_name'].lower() == 'classic'), variants_payload[0])
+
+        groups.append({
+            'type': 'size_group',
+            'base_name': base_name,
+            'category': variants[0].category,
+            'category_parent_id': variants[0].category.parent_id if variants[0].category.parent_id else variants[0].category_id,
+            'description': variants[0].description or '',
+            'default_variant': default_variant,
+            'variants': variants_payload,
+        })
+
+    groups.sort(key=lambda group: (
+        category_sort_key(group['category'].parent.name if group['category'].parent_id else group['category'].name),
+        group['category'].name.lower(),
+        group['base_name'].lower(),
+    ))
+    return groups
+
 # Create your views here.
 
 class HomePageView(ListView):
@@ -44,14 +143,21 @@ class HomePageView(ListView):
     context_object_name = 'home'
     template_name = 'home.html'
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class KioskMenuView(TemplateView):
     """Display menu items for kiosk ordering"""
     template_name = 'kiosk_menu.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        context['menu_items'] = MenuItem.objects.filter(available=True).select_related('category')
+        # top-level categories (parent is null) used for header
+        context['top_categories'] = sorted(Category.objects.filter(parent__isnull=True), key=lambda category: category_sort_key(category.name))
+        # all subcategories (parent not null) for rendering the subcategory strip
+        context['subcategories'] = Category.objects.filter(parent__isnull=False)
+        context['drink_parent_category'] = Category.objects.filter(name='Drinks').first()
+        context['drink_subcategories'] = Category.objects.filter(parent__name='Drinks')
+        context['menu_items'] = MenuItem.objects.filter(available=True).select_related('category', 'category__parent').order_by('category__parent__name', 'category__name', 'name')
+        context['menu_groups'] = build_menu_groups(context['menu_items'])
 
         initial_cart = {}
         cart = self.request.session.get('cart', {})
@@ -119,6 +225,7 @@ class GetStartedView(TemplateView):
         request.session.pop('cart', None)
         return super().get(request, *args, **kwargs)
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class KioskCartView(TemplateView):
     """Handle kiosk cart display and management"""
     template_name = 'kiosk_cart.html'
@@ -148,6 +255,7 @@ class KioskCartView(TemplateView):
         context['cart_empty'] = len(cart_items) == 0
         return context
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class KioskCheckoutView(TemplateView):
     """Handle order type selection and checkout"""
     template_name = 'kiosk_checkout.html'

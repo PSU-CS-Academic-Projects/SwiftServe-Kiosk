@@ -2,20 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Kiosk Menu - Order Now</title>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260601a">
 </head>
 <body>
 		<div id="preloader">
 			<div class="jumper">
-				<div></div>
-				<div></div>
-				<div></div>
+
 			</div>
 		</div>
 
@@ -34,6 +31,27 @@
 		</script>
 
 	<div class="kiosk-container">
+		<!-- Side rail (hamburger drawer) -->
+		<aside id="side-rail" class="side-rail" aria-hidden="true">
+			<button id="side-rail-close" class="side-rail-close" aria-label="Close categories">×</button>
+			<div class="side-rail-content">
+				<h4>Categories</h4>
+				<div class="side-cats">
+					<button class="side-cat-btn" data-category="all">All Items</button>
+					{% for category in top_categories %}
+					<button class="side-cat-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+					{% endfor %}
+				</div>
+				<div class="side-rail-section">
+					<h4>Items View Option</h4>
+					<div class="view-mode-toggle" role="group" aria-label="Items view option">
+						<button type="button" class="view-mode-btn" data-menu-view="cards">Cards</button>
+						<button type="button" class="view-mode-btn" data-menu-view="rows">Rows</button>
+					</div>
+				</div>
+			</div>
+		</aside>
+		<div id="side-rail-overlay" class="side-rail-overlay" tabindex="-1" style="display:none"></div>
 		<!-- Header -->
 		<header class="kiosk-header">
 			<div class="kiosk-header-top">
@@ -42,11 +60,19 @@
 					<p>Digital Ordering Kiosk</p>
 				</div>
 				<div class="kiosk-actions">
-					<div class="cart-area">
-						<button id="cart-btn" class="btn btn-lg btn-primary">
-							<i class="fa fa-shopping-cart"></i> Cart <span id="cart-count" class="badge">0</span>
-						</button>
-						<div id="cart-preview" class="cart-preview" aria-hidden="false"></div>
+					<!-- Cart moved to floating bottom-right for kiosk UX -->
+					<div style="width:1px;height:1px;overflow:hidden;visibility:hidden;" aria-hidden="true"></div>
+				</div>
+			</div>
+                
+			<div class="kiosk-header-bottom">
+				<div id="category-bar" class="category-bar collapsed" aria-expanded="false">
+					<button id="toggle-cat-btn" class="toggle-cat-btn" aria-controls="category-filter" aria-expanded="false">Categories ▾</button>
+					<div class="category-filter" id="category-filter">
+						<button class="category-btn active" data-category="all">All Items</button>
+						{% for category in top_categories %}
+						<button class="category-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+						{% endfor %}
 					</div>
 				</div>
 			</div>
@@ -54,36 +80,89 @@
 
 		<!-- Main Content -->
 		<main class="kiosk-main">
-			<!-- Category Filter -->
-			<div class="category-filter">
-				<button class="category-btn active" data-category="all">All Items</button>
-				{% for category in categories %}
-				<button class="category-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+			<div id="drink-group-view" class="drink-group-view" style="display:none;">
+				{% for sub in drink_subcategories %}
+				<section class="drink-group-section" data-subcategory="{{ sub.id }}">
+					<div class="drink-group-header">
+						<h3>{{ sub.name }}</h3>
+						<hr>
+					</div>
+					<div class="menu-grid drink-group-grid">
+						{% for group in menu_groups %}
+						{% if group.category.id == sub.id %}
+						<div class="menu-card" data-category="{{ group.category.id }}" {% if group.category.parent %}data-category-parent="{{ group.category.parent.id }}"{% else %}data-category-parent="{{ group.category.id }}"{% endif %}>
+							{% if group.default_variant.image_url %}
+								<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}" class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async" data-item-name="{{ group.base_name|escape }}" data-item-price="{{ group.default_variant.price }}" data-item-description="{{ group.description|default_if_none:''|escape }}" data-item-image="{{ group.default_variant.image_url }}">
+							{% else %}
+								<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button" tabindex="0" aria-label="Preview {{ group.base_name }}">
+									<i class="fa fa-image"></i>
+									<p>No Image</p>
+								</div>
+							{% endif %}
+							<div class="menu-card-body">
+								<h5 class="menu-card-title">{{ group.base_name }}</h5>
+								{% if group.description %}
+								<p class="menu-card-description">{{ group.description }}</p>
+								{% endif %}
+								<div class="menu-card-footer menu-card-footer-size">
+									{% if group.type == 'size_group' %}
+									<div class="size-selector" role="radiogroup" aria-label="Select size for {{ group.base_name }}">
+										{% for variant in group.variants %}
+										<button type="button" class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}" data-item-id="{{ variant.id }}" data-item-name="{{ group.base_name }} {{ variant.size_name }}" data-item-price="{{ variant.price }}" data-item-image="{{ variant.image_url }}" aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}" aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
+											<span class="size-option-label">{{ variant.size_name }}</span>
+										</button>
+										{% endfor %}
+									</div>
+									{% endif %}
+									<div class="menu-card-footer-actions">
+										<span class="price selected-price">₱ {{ group.default_variant.price }}</span>
+										<button class="btn btn-sm btn-success add-to-cart-btn" data-item-id="{{ group.default_variant.id }}" data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}" data-item-price="{{ group.default_variant.price }}" data-item-image="{{ group.default_variant.image_url }}">
+											Add to cart
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						{% endif %}
+						{% endfor %}
+					</div>
+				</section>
 				{% endfor %}
 			</div>
 
 			<!-- Menu Grid -->
 			<div class="menu-grid" id="menu-grid">
-				{% for item in menu_items %}
-				<div class="menu-card" data-category="{{ item.category.id }}">
-					{% if item.image %}
-						<img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-card-image">
+				{% for group in menu_groups %}
+				<div class="menu-card" data-category="{{ group.category.id }}" {% if group.category.parent %}data-category-parent="{{ group.category.parent.id }}"{% else %}data-category-parent="{{ group.category.id }}"{% endif %}>
+					{% if group.default_variant.image_url %}
+						<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}" class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async" data-item-name="{{ group.base_name|escape }}" data-item-price="{{ group.default_variant.price }}" data-item-description="{{ group.description|default_if_none:''|escape }}" data-item-image="{{ group.default_variant.image_url }}">
 					{% else %}
-						<div class="menu-card-image-placeholder">
+						<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button" tabindex="0" aria-label="Preview {{ group.base_name }}">
 							<i class="fa fa-image"></i>
 							<p>No Image</p>
 						</div>
 					{% endif %}
 					<div class="menu-card-body">
-						<h5 class="menu-card-title">{{ item.name }}</h5>
-						{% if item.description %}
-						<p class="menu-card-description">{{ item.description }}</p>
+						<h5 class="menu-card-title">{{ group.base_name }}</h5>
+						{% if group.description %}
+						<p class="menu-card-description">{{ group.description }}</p>
 						{% endif %}
-						<div class="menu-card-footer">
-							<span class="price">₱ {{ item.price }}</span>
-							<button class="btn btn-sm btn-success add-to-cart-btn" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.price }}">
-								Add
-							</button>
+						<div class="menu-card-footer menu-card-footer-size">
+							{% if group.type == 'size_group' %}
+							<div class="size-selector" role="radiogroup" aria-label="Select size for {{ group.base_name }}">
+								{% for variant in group.variants %}
+								<button type="button" class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}" data-item-id="{{ variant.id }}" data-item-name="{{ group.base_name }} {{ variant.size_name }}" data-item-price="{{ variant.price }}" data-item-image="{{ variant.image_url }}" aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}" aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
+									<span class="size-option-label">{{ variant.size_name }}</span>
+								</button>
+								{% endfor %}
+							</div>
+							{% endif %}
+							<div class="menu-card-footer-actions">
+								<span class="price selected-price">₱ {{ group.default_variant.price }}</span>
+								<button class="btn btn-sm btn-success add-to-cart-btn" data-item-id="{{ group.default_variant.id }}" data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}" data-item-price="{{ group.default_variant.price }}" data-item-image="{{ group.default_variant.image_url }}">
+									Add to cart
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -102,72 +181,36 @@
 		</footer>
 	</div>
 
-	<!-- Item Detail Modal -->
-	<div class="modal fade" id="itemModal" tabindex="-1">
-		<div class="modal-dialog modal-lg">
+	<button id="hamburger-btn" class="hamburger-btn hamburger-floating" aria-label="Open categories">☰</button>
+
+	<!-- Floating cart (bottom-right) -->
+	<div id="floating-cart" class="floating-cart" aria-live="polite" style="position:fixed; inset: auto 18px 16px auto; z-index:900;">
+		<div class="floating-cart-controls" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+			<button id="cart-stack-toggle" class="btn btn-sm cart-stack-toggle" style="display:none;" aria-pressed="false" title="Hide item stack" aria-label="Hide item stack"><i id="cart-stack-icon" class="fa fa-eye" aria-hidden="true"></i></button>
+			<button id="cart-btn" class="btn cart-floating-btn" aria-label="Open cart">
+				<i class="fa fa-shopping-cart"></i>
+				<span id="cart-count" class="badge">0</span>
+			</button>
+		</div>
+		<div id="cart-preview" class="cart-preview floating-cart-preview" aria-hidden="false"></div>
+	</div>
+
+	<!-- Image Preview Modal -->
+	<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewTitle" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered image-preview-modal-dialog" role="document">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="itemName"></h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-				</div>
+				<h5 class="sr-only" id="imagePreviewTitle">Menu Preview</h5>
+				<button type="button" class="image-preview-close" data-dismiss="modal" aria-label="Close">&times;</button>
 				<div class="modal-body">
-					<div class="item-details">
-						<p><strong>Price:</strong> ₱<span id="itemPrice"></span></p>
-						<p><strong>Description:</strong> <span id="itemDesc"></span></p>
-						
-						<!-- Customization Options -->
-						<div class="customization-options">
-							<h6>Customizations:</h6>
-							<div class="form-group">
-								<label>Size:</label>
-								<select class="form-control customization-select" data-option-name="Size">
-									<option value="">Standard</option>
-									<option value="Small">Small (-₱5.00)</option>
-									<option value="Large">Large (+₱10.00)</option>
-									<option value="Extra Large">Extra Large (+₱15.00)</option>
-								</select>
-							</div>
-							
-							<div class="form-group">
-								<label>Add Ons:</label>
-								<div class="form-check">
-									<input class="form-check-input customization-check" type="checkbox" value="Extra Shot" data-option-name="Extra Shot" data-price="50">
-									<label class="form-check-label">Extra Shot (+₱50)</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input customization-check" type="checkbox" value="Whipped Cream" data-option-name="Whipped Cream" data-price="30">
-									<label class="form-check-label">Whipped Cream (+₱30)</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input customization-check" type="checkbox" value="Chocolate Drizzle" data-option-name="Chocolate Drizzle" data-price="25">
-									<label class="form-check-label">Chocolate Drizzle (+₱25)</label>
-								</div>
-							</div>
-
-							<div class="form-group">
-								<label>Special Requests:</label>
-								<textarea class="form-control customization-text" id="specialRequests" rows="3" placeholder="e.g., Less sugar, No ice, etc."></textarea>
-							</div>
-						</div>
-
-						<div class="quantity-selector">
-							<label>Quantity:</label>
-							<div class="input-group">
-								<button class="btn btn-outline-secondary" id="qty-minus">−</button>
-								<input type="number" class="form-control text-center" id="quantity" value="1" min="1">
-								<button class="btn btn-outline-secondary" id="qty-plus">+</button>
-							</div>
+					<div class="image-preview-stage" id="imagePreviewStage">
+						<div class="image-preview-wrap">
+							<img id="imagePreviewModalImage" src="" alt="Menu preview" draggable="false">
 						</div>
 					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-success" id="add-to-cart-modal-btn">Add to Cart</button>
 				</div>
 			</div>
 		</div>
 	</div>
-
 	<!-- Custom Confirmation Modal -->
 	<div id="confirmationModal" class="custom-confirmation-modal" style="display: none;">
 		<div class="confirmation-overlay"></div>
@@ -346,9 +389,206 @@
 		const proceedBtn = document.getElementById('proceed-to-cart-btn');
 		const categoryBtns = document.querySelectorAll('.category-btn');
 		const menuCards = document.querySelectorAll('.menu-card');
+		const menuGrid = document.getElementById('menu-grid');
+		const drinkGroupView = document.getElementById('drink-group-view');
+		const drinksCategoryId = '{{ drink_parent_category.id|default_if_none:"" }}';
+		const viewModeButtons = document.querySelectorAll('.view-mode-btn');
+		const previewModalElement = $('#imagePreviewModal');
+		const previewImage = document.getElementById('imagePreviewModalImage');
+		const previewTitle = document.getElementById('imagePreviewTitle');
+		const imagePreviewStage = document.getElementById('imagePreviewStage');
 		const cartCountBadge = document.getElementById('cart-count');
 		let cart = initialCartData ? JSON.parse(initialCartData.textContent || '{}') : {};
 		const cartPreview = document.getElementById('cart-preview');
+		const cartStackToggle = document.getElementById('cart-stack-toggle');
+		const cartStackIcon = document.getElementById('cart-stack-icon');
+
+		function setCartStackToggleVisibility(hasItems) {
+			if (!cartStackToggle) return;
+			cartStackToggle.style.display = hasItems ? 'inline-flex' : 'none';
+			if (!hasItems) {
+				cartPreview.classList.remove('hidden');
+				cartStackToggle.setAttribute('aria-pressed', 'false');
+				cartStackToggle.title = 'Hide item stack';
+				cartStackToggle.setAttribute('aria-label', 'Hide item stack');
+				if (cartStackIcon) {
+					cartStackIcon.classList.remove('fa-eye-slash');
+					cartStackIcon.classList.add('fa-eye');
+				}
+			}
+		}
+
+		function setMenuViewMode(nextMode) {
+			const mode = nextMode === 'rows' ? 'rows' : 'cards';
+			document.body.classList.toggle('menu-view-rows', mode === 'rows');
+			document.body.classList.toggle('menu-view-cards', mode === 'cards');
+			viewModeButtons.forEach(btn => {
+				const isActive = btn.dataset.menuView === mode;
+				btn.classList.toggle('active', isActive);
+				btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+			});
+			try { localStorage.setItem('menuItemsViewMode', mode); } catch (e) {}
+		}
+
+		try {
+			setMenuViewMode(localStorage.getItem('menuItemsViewMode') || 'cards');
+		} catch (e) {
+			setMenuViewMode('cards');
+		}
+
+		viewModeButtons.forEach(btn => {
+			btn.addEventListener('click', function() {
+				setMenuViewMode(this.dataset.menuView);
+			});
+		});
+		// restore user preference
+		try {
+			const hidden = localStorage.getItem('cartPreviewHidden');
+			if (hidden === '1') {
+				cartPreview.classList.add('hidden');
+				if (cartStackToggle) { cartStackToggle.setAttribute('aria-pressed', 'true'); cartStackToggle.title = 'Show item stack'; cartStackToggle.setAttribute('aria-label', 'Show item stack'); if(cartStackIcon){ cartStackIcon.classList.remove('fa-eye'); cartStackIcon.classList.add('fa-eye-slash'); } }
+			}
+		} catch (e) {}
+		setCartStackToggleVisibility(Object.keys(cart).reduce((count, itemId) => count + ((cart[itemId] && cart[itemId].quantity) ? cart[itemId].quantity : 0), 0) > 0);
+
+		if (cartStackToggle) {
+			cartStackToggle.addEventListener('click', function() {
+				const isHidden = cartPreview.classList.toggle('hidden');
+				this.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+				this.title = isHidden ? 'Show item stack' : 'Hide item stack';
+				this.setAttribute('aria-label', isHidden ? 'Show item stack' : 'Hide item stack');
+				if (cartStackIcon) {
+					cartStackIcon.classList.toggle('fa-eye');
+					cartStackIcon.classList.toggle('fa-eye-slash');
+				}
+				try { localStorage.setItem('cartPreviewHidden', isHidden ? '1' : '0'); } catch(e) {}
+			});
+		}
+		let previewZoom = 1;
+		let previewPanX = 0;
+		let previewPanY = 0;
+		let isPanning = false;
+		let panStartX = 0;
+		let panStartY = 0;
+		let panBaseX = 0;
+		let panBaseY = 0;
+
+		function updatePreviewPosition() {
+			previewImage.style.left = 'calc(50% + ' + previewPanX + 'px)';
+			previewImage.style.top = 'calc(50% + ' + previewPanY + 'px)';
+			previewImage.style.transform = 'translate(-50%, -50%) scale(' + previewZoom + ')';
+			previewImage.style.cursor = previewZoom > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default';
+		}
+
+		function setPreviewZoom(nextZoom) {
+			previewZoom = Math.max(1, Math.min(3, nextZoom));
+			if (previewZoom === 1) {
+				previewPanX = 0;
+				previewPanY = 0;
+			}
+			updatePreviewPosition();
+		}
+
+		function openImagePreviewFromElement(trigger) {
+			const card = trigger.closest('.menu-card');
+			if (!card) return;
+
+			const itemName = trigger.dataset.itemName || card.querySelector('.menu-card-title')?.textContent || 'Menu Preview';
+			const itemImage = trigger.dataset.itemImage || (trigger.tagName === 'IMG' ? trigger.src : '{% static "images/slide-01.jpg" %}');
+
+			previewTitle.textContent = itemName;
+			previewImage.src = itemImage;
+			previewImage.alt = itemName;
+			previewImage.draggable = false;
+			setPreviewZoom(1);
+			previewModalElement.modal('show');
+		}
+
+		imagePreviewStage.addEventListener('click', function(e) {
+			if (e.target === imagePreviewStage) {
+				previewModalElement.modal('hide');
+			}
+		});
+
+		imagePreviewStage.addEventListener('wheel', function(e) {
+			e.preventDefault();
+			const stageRect = imagePreviewStage.getBoundingClientRect();
+			const oldZoom = previewZoom;
+			const direction = e.deltaY < 0 ? 1 : -1;
+			const nextZoom = oldZoom + direction * 0.25;
+			const clampedZoom = Math.max(1, Math.min(3, nextZoom));
+			if (clampedZoom === oldZoom) return;
+
+			if (clampedZoom === 1) {
+				previewPanX = 0;
+				previewPanY = 0;
+				previewZoom = 1;
+				updatePreviewPosition();
+				return;
+			}
+
+			const cursorX = e.clientX - stageRect.left - stageRect.width / 2 - previewPanX;
+			const cursorY = e.clientY - stageRect.top - stageRect.height / 2 - previewPanY;
+			const scaleRatio = clampedZoom / oldZoom;
+			previewPanX = previewPanX - cursorX * (scaleRatio - 1);
+			previewPanY = previewPanY - cursorY * (scaleRatio - 1);
+			previewZoom = clampedZoom;
+			updatePreviewPosition();
+		}, { passive: false });
+
+		previewImage.addEventListener('dragstart', function(e) {
+			e.preventDefault();
+		});
+
+		previewImage.addEventListener('pointerdown', function(e) {
+			if (previewZoom <= 1) return;
+			e.preventDefault();
+			isPanning = true;
+			panStartX = e.clientX;
+			panStartY = e.clientY;
+			panBaseX = previewPanX;
+			panBaseY = previewPanY;
+			previewImage.setPointerCapture(e.pointerId);
+			updatePreviewPosition();
+		});
+
+		previewImage.addEventListener('pointermove', function(e) {
+			if (!isPanning) return;
+			previewPanX = panBaseX + (e.clientX - panStartX);
+			previewPanY = panBaseY + (e.clientY - panStartY);
+			updatePreviewPosition();
+		});
+
+		function endPan(e) {
+			if (!isPanning) return;
+			isPanning = false;
+			if (e && previewImage.hasPointerCapture && previewImage.hasPointerCapture(e.pointerId)) {
+				previewImage.releasePointerCapture(e.pointerId);
+			}
+			updatePreviewPosition();
+		}
+
+		previewImage.addEventListener('pointerup', endPan);
+		previewImage.addEventListener('pointercancel', endPan);
+		previewImage.addEventListener('dblclick', function(e) {
+			e.preventDefault();
+			previewModalElement.modal('hide');
+		});
+
+		document.querySelectorAll('.menu-card-preview-trigger').forEach(trigger => {
+			trigger.addEventListener('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				openImagePreviewFromElement(this);
+			});
+
+			trigger.addEventListener('keydown', function(e) {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					openImagePreviewFromElement(this);
+				}
+			});
+		});
 
 		// Logo click handler - with cart confirmation
 		const homeLogo = document.getElementById('home-logo');
@@ -372,24 +612,76 @@
 			});
 		}
 
-		// Category filtering
-		categoryBtns.forEach(btn => {
-			btn.addEventListener('click', function() {
-				categoryBtns.forEach(b => b.classList.remove('active'));
-				this.classList.add('active');
-				const categoryId = this.dataset.category;
+			// Toggle between normal grid and grouped drink view
+			function showMenuMode(categoryId) {
+				if (!categoryId) return;
+				// If Drinks category is selected, show the grouped drink view
+				if (drinksCategoryId && String(categoryId) === String(drinksCategoryId)) {
+					if (drinkGroupView) drinkGroupView.style.display = 'block';
+					if (menuGrid) menuGrid.style.display = 'none';
+					document.body.classList.add('view-drinks-grouped');
+				} else {
+					if (drinkGroupView) drinkGroupView.style.display = 'none';
+					if (menuGrid) menuGrid.style.display = '';
+					document.body.classList.remove('view-drinks-grouped');
+				}
+			}
 
-				menuCards.forEach(card => {
-					if (categoryId === 'all' || card.dataset.category === categoryId) {
-						card.style.display = 'block';
-					} else {
-						card.style.display = 'none';
-					}
+			// Category filtering (top-level categories only)
+			categoryBtns.forEach(btn => {
+				btn.addEventListener('click', function() {
+					categoryBtns.forEach(b => b.classList.remove('active'));
+					this.classList.add('active');
+					const categoryId = this.dataset.category;
+
+					// Switch view mode (grouped drinks vs grid)
+					showMenuMode(categoryId);
+
+					menuCards.forEach(card => {
+						if (categoryId === 'all' || card.dataset.category === categoryId || card.dataset.categoryParent === categoryId) {
+							card.style.display = 'block';
+						} else {
+							card.style.display = 'none';
+						}
+					});
 				});
+			});
+
+
+
+		// Add to cart from grid (quick add)
+		function syncCardVariant(card) {
+			if (!card) return;
+			const activeSize = card.querySelector('.size-option.active');
+			const button = card.querySelector('.add-to-cart-btn');
+			const price = card.querySelector('.selected-price');
+			if (!button) return;
+			const itemId = activeSize ? activeSize.dataset.itemId : button.dataset.itemId;
+			const itemName = activeSize ? activeSize.dataset.itemName : button.dataset.itemName;
+			const itemPrice = activeSize ? activeSize.dataset.itemPrice : button.dataset.itemPrice;
+			const itemImage = activeSize && activeSize.dataset.itemImage ? activeSize.dataset.itemImage : button.dataset.itemImage;
+			button.dataset.itemId = itemId;
+			button.dataset.itemName = itemName;
+			button.dataset.itemPrice = itemPrice;
+			button.dataset.itemImage = itemImage || button.dataset.itemImage || '';
+			if (price) price.textContent = `₱ ${itemPrice}`;
+		}
+
+		document.querySelectorAll('.menu-card').forEach(card => syncCardVariant(card));
+		document.querySelectorAll('.size-option').forEach(option => {
+			option.addEventListener('click', function() {
+				const card = this.closest('.menu-card');
+				if (!card) return;
+				card.querySelectorAll('.size-option').forEach(btn => {
+					btn.classList.remove('active');
+					btn.setAttribute('aria-pressed', 'false');
+				});
+				this.classList.add('active');
+				this.setAttribute('aria-pressed', 'true');
+				syncCardVariant(card);
 			});
 		});
 
-		// Add to cart from grid (quick add)
 		document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
@@ -399,7 +691,7 @@
                 // find image src for animation/preview
                 let card = this.closest('.menu-card');
                 let imgEl = card.querySelector('img') || card.querySelector('.menu-card-image-placeholder');
-                let imgSrc = imgEl && imgEl.tagName === 'IMG' ? imgEl.src : '{% static "images/slide-01.jpg" %}';
+	                let imgSrc = this.dataset.itemImage || (imgEl && imgEl.tagName === 'IMG' ? imgEl.src : '{% static "images/slide-01.jpg" %}');
 				
 				if (!cart[itemId]) {
 					cart[itemId] = {
@@ -411,14 +703,46 @@
 					};
 				}
 				cart[itemId].quantity += 1;
-				// animate image to cart
-				animateImageToCart(imgSrc, this);
-				updateCartUI();
-				
-				// Send to backend
-				addToCartAPI(itemId, 1, []);
+				// animate image to cart, then update UI and send backend
+				animateImageToCart(imgSrc, this, function() {
+					updateCartUI();
+					// Send to backend
+					addToCartAPI(itemId, 1, []);
+				});
 			});
 		});
+
+		// Collapsible category bar toggle
+		const categoryBar = document.getElementById('category-bar');
+		const toggleCatBtn = document.getElementById('toggle-cat-btn');
+		const savedState = sessionStorage.getItem('categoryBarExpanded');
+
+		function setCategoryBarExpanded(expanded) {
+			if (!categoryBar) return;
+			if (expanded) {
+				categoryBar.classList.remove('collapsed');
+				categoryBar.classList.add('expanded');
+				toggleCatBtn.setAttribute('aria-expanded','true');
+				toggleCatBtn.textContent = 'Categories ▴';
+				sessionStorage.setItem('categoryBarExpanded','1');
+			} else {
+				categoryBar.classList.remove('expanded');
+				categoryBar.classList.add('collapsed');
+				toggleCatBtn.setAttribute('aria-expanded','false');
+				toggleCatBtn.textContent = 'Categories ▾';
+				sessionStorage.removeItem('categoryBarExpanded');
+			}
+		}
+
+		// initialize from session or default collapsed
+		if (savedState === '1') setCategoryBarExpanded(true); else setCategoryBarExpanded(false);
+
+		toggleCatBtn.addEventListener('click', function(){
+			const expanded = categoryBar.classList.contains('expanded');
+			setCategoryBarExpanded(!expanded);
+		});
+
+
 
 		function animateImageToCart(src, btn) {
 			try {
@@ -441,8 +765,81 @@
 				flyItem.style.top = rect.top + 'px';
 
 				const cartRect = document.getElementById('cart-btn').getBoundingClientRect();
-				$(flyItem).animate({ left: cartRect.left + 10, top: cartRect.top + 10, width: 24, height: 24, opacity: 0.6 }, 650, function() { $(this).remove(); });
+				// Accept optional callback as third argument
+				const args = Array.prototype.slice.call(arguments);
+				const onComplete = typeof args[2] === 'function' ? args[2] : null;
+				// Use Web Animations API (transform) for GPU-accelerated constant-speed motion
+				try {
+					const startRect = flyItem.getBoundingClientRect();
+					const deltaX = (cartRect.left + 10) - startRect.left;
+					const deltaY = (cartRect.top + 10) - startRect.top;
+					const keyframes = [
+						{ transform: 'translate(0px, 0px) scale(1)', opacity: 1 },
+						{ transform: `translate(${deltaX}px, ${deltaY}px) scale(0.5)`, opacity: 0.6 }
+					];
+					const anim = flyItem.animate(keyframes, { duration: 650, easing: 'linear', fill: 'forwards' });
+					anim.onfinish = function() { try { flyItem.remove(); } catch(e){} if (onComplete) onComplete(); };
+				} catch (e) {
+					// fallback to jQuery animate if Web Animations not available
+					$(flyItem).animate({ left: cartRect.left + 10, top: cartRect.top + 10, width: 24, height: 24, opacity: 0.6 }, 650, 'linear', function() { $(this).remove(); if (onComplete) onComplete(); });
+				}
 			} catch (e) { /* fail silently */ }
+		}
+
+		// Hamburger / side-rail handlers
+		const hamburgerBtn = document.getElementById('hamburger-btn');
+		const sideRail = document.getElementById('side-rail');
+		const sideRailOverlay = document.getElementById('side-rail-overlay');
+		const sideRailClose = document.getElementById('side-rail-close');
+
+		function syncRailSelection(categoryId, subCategoryId) {
+			document.querySelectorAll('.side-cat-btn').forEach(btn => {
+				btn.classList.toggle('active', btn.dataset.category === categoryId);
+			});
+		}
+
+		function openRail() {
+			if (!sideRail) return;
+			sideRail.classList.add('open');
+			sideRail.setAttribute('aria-hidden', 'false');
+			if (sideRailOverlay) sideRailOverlay.style.display = 'block';
+			document.body.classList.add('rail-open');
+		}
+
+		function closeRail() {
+			if (!sideRail) return;
+			sideRail.classList.remove('open');
+			sideRail.setAttribute('aria-hidden', 'true');
+			if (sideRailOverlay) sideRailOverlay.style.display = 'none';
+			document.body.classList.remove('rail-open');
+		}
+
+		if (hamburgerBtn) {
+			hamburgerBtn.addEventListener('click', function() {
+				if (sideRail && sideRail.classList.contains('open')) closeRail(); else openRail();
+			});
+		}
+
+		if (sideRailClose) sideRailClose.addEventListener('click', closeRail);
+		if (sideRailOverlay) sideRailOverlay.addEventListener('click', closeRail);
+		document.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape' && sideRail && sideRail.classList.contains('open')) closeRail();
+		});
+
+		// Wire side-rail category buttons to the existing hidden category buttons
+		document.querySelectorAll('.side-cat-btn').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const target = Array.from(categoryBtns).find(b => b.dataset.category === this.dataset.category);
+				if (target) target.click();
+				syncRailSelection(this.dataset.category, null);
+				closeRail();
+			});
+		});
+
+		// Initialize rail state from the currently selected category button
+		const initialActiveCategoryBtn = Array.from(categoryBtns).find(b => b.classList.contains('active'));
+		if (initialActiveCategoryBtn) {
+			syncRailSelection(initialActiveCategoryBtn.dataset.category, null);
 		}
 
 		// Cart button
@@ -463,6 +860,7 @@
 			const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
 			cartCountBadge.textContent = totalItems;
 			proceedBtn.disabled = totalItems === 0;
+			setCartStackToggleVisibility(totalItems > 0);
 
 			// render cart preview thumbnails
 			cartPreview.innerHTML = '';

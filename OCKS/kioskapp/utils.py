@@ -1,9 +1,13 @@
 from datetime import datetime
 from io import BytesIO
-import qrcode
-from django.core.files.base import ContentFile
-from kioskapp.models import Order
+from pathlib import Path
 import base64
+
+import qrcode
+from PIL import Image, ImageOps
+from django.core.files.base import ContentFile
+
+from kioskapp.models import Order
 
 def generate_queue_number():
     """Generate the next integer sequence for today's queue.
@@ -62,3 +66,112 @@ def generate_qr_code(order_id, amount_paid):
     qr_image_base64 = base64.b64encode(buffer.getvalue()).decode()
     
     return f"data:image/png;base64,{qr_image_base64}"
+
+
+def build_menu_image_content(source_path, output_stem=None, max_dimension=1200, quality=82):
+    """Resize and compress a menu image for faster page loads."""
+    source_path = Path(source_path)
+    output_stem = output_stem or source_path.stem
+    output_name = f"{output_stem}.jpg"
+
+    with Image.open(source_path) as image:
+        image = ImageOps.exif_transpose(image)
+        image.thumbnail((max_dimension, max_dimension), Image.LANCZOS)
+
+        if image.mode in ("RGBA", "LA", "P"):
+            rgba_image = image.convert("RGBA")
+            background = Image.new("RGBA", rgba_image.size, (255, 255, 255, 255))
+            background.alpha_composite(rgba_image)
+            image = background.convert("RGB")
+        else:
+            image = image.convert("RGB")
+
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=quality, optimize=True, progressive=True)
+
+    buffer.seek(0)
+    return output_name, ContentFile(buffer.read())
+
+
+def build_cropped_menu_image_content(
+    source_path,
+    output_stem=None,
+    crop_left=0.08,
+    crop_top=0.08,
+    crop_right=0.92,
+    crop_bottom=0.36,
+    max_dimension=1200,
+    quality=88,
+):
+    """Crop a poster-style menu image down to the food/photo area and compress it."""
+    source_path = Path(source_path)
+    output_stem = output_stem or source_path.stem
+    output_name = f"{output_stem}.jpg"
+
+    with Image.open(source_path) as image:
+        image = ImageOps.exif_transpose(image)
+        width, height = image.size
+
+        left = int(width * crop_left)
+        top = int(height * crop_top)
+        right = int(width * crop_right)
+        bottom = int(height * crop_bottom)
+
+        left = max(0, min(left, width - 1))
+        top = max(0, min(top, height - 1))
+        right = max(left + 1, min(right, width))
+        bottom = max(top + 1, min(bottom, height))
+
+        image = image.crop((left, top, right, bottom))
+        image.thumbnail((max_dimension, max_dimension), Image.LANCZOS)
+
+        if image.mode in ("RGBA", "LA", "P"):
+            rgba_image = image.convert("RGBA")
+            background = Image.new("RGBA", rgba_image.size, (255, 255, 255, 255))
+            background.alpha_composite(rgba_image)
+            image = background.convert("RGB")
+        else:
+            image = image.convert("RGB")
+
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=quality, optimize=True, progressive=True)
+
+    buffer.seek(0)
+    return output_name, ContentFile(buffer.read())
+
+
+def get_menu_image_crop_profile(menu_name: str):
+    """Return a crop profile tuned for the kind of item shown in the poster."""
+    normalized = menu_name.lower()
+
+    drink_keywords = ("coffee", "espresso", "americano", "latte", "macchiato", "cappuccino", "frappe", "tea", "milktea", "mocha")
+    food_keywords = ("pasta", "lasagna", "chicken", "fries", "mojos", "bread", "bagel", "bagels", "baguette", "turon", "cake", "cheese", "ice cream", "sopas", "champorado", "chips")
+
+    if any(keyword in normalized for keyword in drink_keywords):
+        return {
+            "crop_left": 0.06,
+            "crop_top": 0.04,
+            "crop_right": 0.94,
+            "crop_bottom": 0.36,
+            "max_dimension": 1200,
+            "quality": 88,
+        }
+
+    if any(keyword in normalized for keyword in food_keywords):
+        return {
+            "crop_left": 0.05,
+            "crop_top": 0.05,
+            "crop_right": 0.95,
+            "crop_bottom": 0.42,
+            "max_dimension": 1200,
+            "quality": 88,
+        }
+
+    return {
+        "crop_left": 0.05,
+        "crop_top": 0.05,
+        "crop_right": 0.95,
+        "crop_bottom": 0.40,
+        "max_dimension": 1200,
+        "quality": 88,
+    }

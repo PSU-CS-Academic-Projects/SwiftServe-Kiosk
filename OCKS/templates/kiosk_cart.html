@@ -121,7 +121,7 @@
 		document.querySelectorAll('.qty-plus').forEach(btn => {
 			btn.addEventListener('click', function() {
 				const itemId = this.dataset.itemId;
-				const qtyInput = document.querySelector(`input.qty-input[value]`);
+				const qtyInput = this.parentElement.querySelector('input.qty-input');
 				const newQty = parseInt(qtyInput.value) + 1;
 				updateQuantity(itemId, newQty);
 			});
@@ -195,9 +195,12 @@
 		}
 
 		// Proceed to checkout
-		document.getElementById('proceed-checkout-btn').addEventListener('click', function() {
-			window.location.href = '{% url "kiosk_checkout" %}';
-		});
+		const proceedCheckoutBtn = document.getElementById('proceed-checkout-btn');
+		if (proceedCheckoutBtn) {
+			proceedCheckoutBtn.addEventListener('click', function() {
+				window.location.href = '{% url "kiosk_checkout" %}';
+			});
+		}
 
 		updateTotals();
 	</script>

@@ -3,7 +3,7 @@ from kioskapp.models import Order, Category, MenuItem, OrderItem, ItemConfigurat
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'parent')
     search_fields = ('name',)
 
 @admin.register(MenuItem)
