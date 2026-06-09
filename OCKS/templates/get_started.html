@@ -2,44 +2,471 @@
 {% load static %}
 
 {% block content %}
-<div class="container text-center my-5">
-  <h1 class="display-4">Get Started</h1>
-  <p class="lead">Explore our menu. Tap Get Started to place an order.</p>
+<style>
+  .session-greeting {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 1050;
+    width: min(320px, calc(100vw - 40px));
+    background-color: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    text-align: left;
+    animation: greetingSlideIn 0.35s ease-out both;
+  }
 
-  <div class="d-flex justify-content-center mt-4">
-    <a href="{% url 'kiosk_menu' %}" class="btn btn-lg btn-primary">Get Started</a>
+  .session-greeting.hide {
+    animation: greetingSlideOut 0.45s ease-in forwards;
+  }
+
+  .session-greeting p {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .session-greeting small {
+    color: #558b2f;
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  .my-orders-section {
+    margin-top: 28px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    text-align: left;
+  }
+
+  .my-orders-title {
+    margin: 0 0 12px 0;
+    color: #2a2a2a;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .my-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .my-orders-table th,
+  .my-orders-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+  }
+
+  .my-orders-table th {
+    color: #666;
+    font-weight: 600;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .my-orders-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .my-order-status {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 4px 0;
+    width: 85px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .my-order-status.pending {
+    background: #ffc107;
+    color: #1f2328;
+  }
+
+  .my-order-status.preparing {
+    background: #ff6b6b;
+  }
+
+  .my-order-status.ready {
+    background: #51cf66;
+  }
+
+  .my-order-status.completed {
+    background: #339af0;
+  }
+
+  .my-order-status.cancelled {
+    background: #868e96;
+  }
+
+  .my-order-track-btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 5px 0;
+    width: 76px;
+    text-align: center;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 88, 73, 0.35);
+    color: #fb5849;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .my-order-track-btn:hover {
+    color: #fff;
+    background: #fb5849;
+    text-decoration: none;
+  }
+
+  .my-orders-empty {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.92rem;
+  }
+
+  .cancel-policy-note {
+    margin: 10px 0 0 0;
+    color: #6c757d;
+    font-size: 0.84rem;
+  }
+
+  .my-order-cancel-btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 5px 0;
+    width: 76px;
+    text-align: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 107, 107, 0.45);
+    color: #ff6b6b;
+    background: #fff;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .my-order-cancel-btn:hover {
+    color: #fff;
+    background: #ff6b6b;
+    text-decoration: none;
+  }
+
+  .my-order-cancel-btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .my-order-note {
+    margin-top: 4px;
+    color: #6c757d;
+    font-size: 0.78rem;
+  }
+
+  .cancel-feedback {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  .cancel-feedback.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+  }
+
+  .cancel-feedback.warning {
+    background: #fff8e1;
+    color: #8d6e00;
+    border-left: 4px solid #ffc107;
+  }
+
+  @keyframes greetingSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes greetingSlideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateX(-120%);
+    }
+  }
+
+  .split-card {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .split-bg-img {
+    background-image: url('{% static "images/slide-03.jpg" %}');
+    background-size: cover;
+    background-position: center;
+    min-height: 450px;
+    position: relative;
+  }
+
+  .welcome-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #2d3748;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-subtitle {
+    color: #718096;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .get-started-btn {
+    background: linear-gradient(135deg, #ff6b4a 0%, #fb5849 100%);
+    color: white !important;
+    padding: 15px 35px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(251, 88, 73, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    display: inline-block;
+  }
+
+  .get-started-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(251, 88, 73, 0.35);
+  }
+
+  .my-orders-pane {
+    background-color: #fafbfc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #f0f2f5;
+  }
+
+  .my-orders-pane-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px !important;
+  }
+</style>
+
+{% if show_welcome_card %}
+<div class="session-greeting" id="sessionGreeting">
+  <p>
+    <i class="fa fa-check-circle"></i> Welcome back, <strong>{{ customer_name }}</strong>!
+  </p>
+</div>
+{% endif %}
+
+<div class="container my-5">
+
+  {% if cancel_feedback %}
+  <div class="cancel-feedback {{ cancel_feedback.type|default:'success' }} mb-4" id="cancelFeedbackAlert">
+    {{ cancel_feedback.text }}
   </div>
+  {% endif %}
 
-  <div id="menuCarousel" class="carousel slide mt-4" data-ride="carousel">
-    <div class="carousel-inner">
-      {% for item in carousel_items %}
-      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-        {% if item.image %}
-          <img src="{{ item.image.url }}" class="d-block w-100" alt="{{ item.name }}" style="height:420px; object-fit:cover;">
+  <div class="row split-card align-items-stretch">
+    <!-- Left: Image Pane -->
+    <div class="col-lg-6 d-none d-lg-block split-bg-img">
+      <div
+        style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0.45));">
+      </div>
+      <div style="position: absolute; bottom: 40px; left: 40px; z-index: 10; text-align: left;">
+        <h2
+          style="color: #fff; font-weight: 800; font-size: 2.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.4); margin-bottom: 5px;">
+          SwiftServe Kiosk</h2>
+        <p
+          style="color: rgba(255,255,255,0.9); font-size: 1rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3); margin: 0; font-weight: 500;">
+          Your fast and seamless digital ordering experience.</p>
+      </div>
+    </div>
+
+    <!-- Right: Welcome and Order Dashboard -->
+    <div class="col-lg-6 d-flex flex-column justify-content-between p-4 p-md-5" style="text-align: left;">
+      <div class="my-auto py-3">
+        <h1 class="welcome-title mb-3">Fresh food.<br>Fast taps. Full plates.</h1>
+        <p class="welcome-subtitle mb-4">Explore our delicious selection of freshly baked cakes, signature coffees, and
+          artisan foods.</p>
+
+        <div class="mb-4">
+          <a href="{% url 'kiosk_menu' %}" class="get-started-btn">
+            <i class="fa fa-cutlery mr-2"></i> Start My Order
+          </a>
+        </div>
+      </div>
+
+      <!-- My Order Status pane inside the split card -->
+      <div class="my-orders-pane border-top pt-4">
+        <h4 class="my-orders-pane-title"><i class="fa fa-clock-o mr-2"></i> My Order Status</h4>
+        {% if my_orders %}
+        <div class="table-responsive">
+          <table class="my-orders-table">
+            <thead>
+              <tr style="border-bottom: 2px solid #eef1f6;">
+                <th>Queue #</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in my_orders %}
+              <tr style="border-bottom: 1px solid #f3f5f8;">
+                <td style="font-weight: 700; color: #2d3748; padding: 12px 8px; white-space: nowrap;">
+                  {% if order.queue_number > 999 %}
+                  Q-{{ order.queue_number }}
+                  {% else %}
+                  Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
+                  {% endif %}
+                </td>
+                <td style="color: #718096; padding: 12px 8px;">{{ order.created_at|date:"M d, H:i" }}</td>
+                <td style="padding: 12px 8px;">
+                  <span class="my-order-status {{ order.status|lower }}">{{ order.status }}</span>
+                </td>
+                <td class="text-right" style="padding: 12px 8px;">
+                  <a class="my-order-track-btn" href="{% url 'order_status' order.id %}">Track</a>
+                  <form method="post" action="{% url 'cancel_customer_order' order.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="button" class="my-order-cancel-btn cancel-order-trigger" {% if not order.can_customer_cancel %}disabled{% endif %} data-queue-num="{% if order.queue_number > 999 %}Q-{{ order.queue_number }}{% else %}Q-{{ order.created_at|date:'dm' }}{{ order.queue_number|stringformat:'03d' }}{% endif %}">Cancel</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="cancel-policy-note mt-3">Cancellation is allowed only while status is Pending and within {{
+          cancel_window_seconds }} seconds from order placement.</p>
         {% else %}
-          <img src="{% static 'images/slide-01.jpg' %}" class="d-block w-100" alt="" style="height:420px; object-fit:cover;">
+        <p class="my-orders-empty text-muted">No orders yet. Place your first order to see live status updates here.</p>
         {% endif %}
       </div>
-      {% endfor %}
     </div>
-    <a class="carousel-control-prev" href="#menuCarousel" role="button" data-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="sr-only">Previous</span>
-    </a>
-    <a class="carousel-control-next" href="#menuCarousel" role="button" data-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="sr-only">Next</span>
-    </a>
+  </div>
+</div>
+
+<!-- Custom Order Cancellation Confirmation Modal -->
+<div id="cancelOrderModal" class="custom-confirmation-modal" style="display: none;">
+  <div class="confirmation-overlay"></div>
+  <div class="confirmation-dialog">
+    <div class="confirmation-header" style="text-align: center; padding: 20px 20px 10px;">
+      <i class="fa fa-exclamation-triangle text-danger" style="font-size: 2.2rem; margin-bottom: 10px; display: block;"></i>
+      <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Cancel Order</h3>
+    </div>
+    <div class="confirmation-body" style="padding: 15px 20px; text-align: center;">
+      <p style="margin: 0; font-size: 0.95rem; color: #666; line-height: 1.5;">Are you sure you want to cancel order <strong id="cancelOrderNum"></strong>?</p>
+    </div>
+    <div class="confirmation-footer" style="padding: 15px 20px; display: flex; gap: 10px; justify-content: center; background-color: #f8f9fa; border-top: 1px solid #eee;">
+      <button id="cancelOrderConfirmBtn" class="btn btn-danger" style="min-width: 140px; font-weight: 600;">Yes, Cancel</button>
+      <button id="cancelOrderCancelBtn" class="btn btn-secondary" style="min-width: 140px; font-weight: 600;">Cancel</button>
+    </div>
   </div>
 </div>
 
 <script>
-// auto-cycle carousel every 3s
-(function(){
-  try{
-    $('.carousel').carousel({ interval: 3000 });
-  }catch(e){}
-})();
+  // Keep the greeting visible briefly, then slide it away to the left
+  (function () {
+    var greeting = document.getElementById('sessionGreeting');
+    if (!greeting) return;
+
+    setTimeout(function () {
+      greeting.classList.add('hide');
+      setTimeout(function () {
+        if (greeting && greeting.parentNode) {
+          greeting.parentNode.removeChild(greeting);
+        }
+      }, 500);
+    }, 4500);
+  })();
+
+  // Keep the cancellation feedback visible briefly, then fade it out
+  (function () {
+    var feedback = document.getElementById('cancelFeedbackAlert');
+    if (!feedback) return;
+
+    setTimeout(function () {
+      feedback.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      feedback.style.opacity = '0';
+      feedback.style.transform = 'translateY(-10px)';
+      setTimeout(function () {
+        if (feedback && feedback.parentNode) {
+          feedback.parentNode.removeChild(feedback);
+        }
+      }, 500);
+    }, 4500);
+  })();
+
+  // Order cancellation modal handler
+  document.addEventListener('DOMContentLoaded', function () {
+    var cancelTriggers = document.querySelectorAll('.cancel-order-trigger');
+    var cancelModal = document.getElementById('cancelOrderModal');
+    var cancelConfirmBtn = document.getElementById('cancelOrderConfirmBtn');
+    var cancelCancelBtn = document.getElementById('cancelOrderCancelBtn');
+    var cancelOrderNum = document.getElementById('cancelOrderNum');
+    var activeForm = null;
+
+    if (cancelModal && cancelConfirmBtn && cancelCancelBtn) {
+      cancelTriggers.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          activeForm = this.closest('form');
+          var queueNum = this.getAttribute('data-queue-num');
+          if (cancelOrderNum) cancelOrderNum.textContent = queueNum;
+          cancelModal.style.display = 'flex';
+        });
+      });
+
+      cancelCancelBtn.addEventListener('click', function () {
+        cancelModal.style.display = 'none';
+        activeForm = null;
+      });
+
+      var overlay = cancelModal.querySelector('.confirmation-overlay');
+      if (overlay) {
+        overlay.addEventListener('click', function () {
+          cancelModal.style.display = 'none';
+          activeForm = null;
+        });
+      }
+
+      cancelConfirmBtn.addEventListener('click', function () {
+        if (activeForm) {
+          activeForm.submit();
+        }
+      });
+    }
+  });
 </script>
 
 {% endblock %}

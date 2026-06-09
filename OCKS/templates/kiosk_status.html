@@ -1,15 +1,35 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Order Status - Kiosk</title>
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+				document.addEventListener('DOMContentLoaded', function () {
+					document.body.classList.add('dark-theme');
+				});
+			}
+		})();
+	</script>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260608g">
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 </head>
+
 <body>
 	<div class="kiosk-container">
 		<!-- Header -->
@@ -24,11 +44,25 @@
 		<!-- Main Content -->
 		<main class="kiosk-main status-main">
 			<div class="status-container">
+				{% if order.customer %}
+				<div class="current-status-section">
+					<div class="status-card status-completed" style="padding: 18px 20px;">
+						<h5 class="mb-3">Customer Details</h5>
+						<p class="status-message mb-1"><strong>Name:</strong> {{ order.customer.name }}</p>
+						<p class="status-message mb-0"><strong>Phone:</strong> {{ order.customer.masked_phone }}</p>
+					</div>
+				</div>
+				{% endif %}
+
 				<!-- Queue Number Display -->
 				<div class="queue-display-section">
 					<h3>Queue Number</h3>
 					<div class="queue-number-large">
-						Q-{{ order.queue_number|stringformat:"03d" }}
+						{% if order.queue_number > 999 %}
+						Q-{{ order.queue_number }}
+						{% else %}
+						Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
+						{% endif %}
 					</div>
 				</div>
 
@@ -36,23 +70,30 @@
 				<div class="status-progress-section">
 					<h4 class="mb-4">Order Progress</h4>
 					<div class="status-timeline">
-						<div class="status-step {% if order.status == 'Pending' or order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+						<div
+							class="status-step {% if order.status == 'Pending' or order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
 							<div class="status-icon">
 								<i class="fa fa-hourglass-half"></i>
 							</div>
 							<div class="status-label">Pending</div>
 						</div>
-						<div class="status-connector {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}"></div>
+						<div
+							class="status-connector {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+						</div>
 
-						<div class="status-step {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+						<div
+							class="status-step {% if order.status == 'Preparing' or order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
 							<div class="status-icon">
 								<i class="fa fa-fire"></i>
 							</div>
 							<div class="status-label">Preparing</div>
 						</div>
-						<div class="status-connector {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}"></div>
+						<div
+							class="status-connector {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+						</div>
 
-						<div class="status-step {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
+						<div
+							class="status-step {% if order.status == 'Ready' or order.status == 'Completed' %}active{% endif %}">
 							<div class="status-icon">
 								<i class="fa fa-check"></i>
 							</div>
@@ -71,7 +112,8 @@
 
 				<!-- Current Status Card -->
 				<div class="current-status-section">
-					<div class="status-card {% if order.status == 'Ready' %}status-ready{% elif order.status == 'Pending' %}status-pending{% elif order.status == 'Preparing' %}status-preparing{% else %}status-completed{% endif %}">
+					<div
+						class="status-card {% if order.status == 'Ready' %}status-ready{% elif order.status == 'Pending' %}status-pending{% elif order.status == 'Preparing' %}status-preparing{% else %}status-completed{% endif %}">
 						<h5>Current Status</h5>
 						<div class="status-badge">{{ order.status }}</div>
 						{% if order.status == 'Ready' %}
@@ -80,8 +122,65 @@
 						<p class="status-message">Your order has been received. Please wait while we prepare it.</p>
 						{% elif order.status == 'Preparing' %}
 						<p class="status-message">We're preparing your delicious order. Please wait a bit more!</p>
+						{% elif order.status == 'Cancelled' %}
+						<p class="status-message">This order was cancelled. If payment was completed, staff will process
+							your refund request.</p>
 						{% else %}
 						<p class="status-message">Thank you for your order! Enjoy your meal.</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="current-status-section">
+					<div class="policy-card">
+						<div class="policy-card-header">
+							<h5><i class="fa fa-shield"></i> Cancellation & Refund Policy</h5>
+							<button type="button" class="policy-help-btn" data-toggle="modal"
+								data-target="#policyHelpModal">?</button>
+						</div>
+						<div class="policy-card-body">
+							<p class="policy-text">
+								<i class="fa fa-clock-o"></i> <span><strong>Cancellation:</strong> {{ cancel_note }}</span>
+							</p>
+							<p class="policy-text">
+								<i class="fa fa-credit-card"></i> <span><strong>Refunds:</strong> {{ refund_note }}</span>
+							</p>
+							{% if can_customer_cancel %}
+							<div class="policy-actions mt-3">
+								<form method="post" action="{% url 'cancel_customer_order' order.id %}"
+									class="w-100 m-0">
+									{% csrf_token %}
+									<button type="button" class="btn btn-danger btn-block w-100"
+										id="cancel-order-btn">Cancel This Order</button>
+								</form>
+							</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+
+				<div class="current-status-section">
+					<div class="status-card status-ready">
+						<h5>Payment QR</h5>
+						{% if show_track_qr %}
+						<p class="status-message mb-2">Payment is still pending. You can open the QR below to complete
+							payment.</p>
+						<button type="button" class="btn btn-outline-primary btn-sm mb-3" id="toggle-track-qr">Show
+							QR</button>
+						<div id="track-qr-panel" style="display:none;">
+							<div class="text-center mb-2">
+								<img src="{{ track_qr_code }}" alt="Order Payment QR"
+									style="max-width: 180px; width: 100%; height: auto; border-radius: 8px; border: 1px solid #e9ecef;">
+							</div>
+							<p class="status-message mb-0"><small>Use this QR only for this order. Do not share
+									screenshots.</small></p>
+						</div>
+						{% elif payment.payment_status|lower == 'paid' %}
+						<p class="status-message mb-0">Payment is already marked as Paid. QR is hidden.</p>
+						{% elif order.status == 'Cancelled' %}
+						<p class="status-message mb-0">Order is cancelled. QR is not available.</p>
+						{% else %}
+						<p class="status-message mb-0">QR is not available for this order state.</p>
 						{% endif %}
 					</div>
 				</div>
@@ -121,6 +220,7 @@
 
 		<!-- Footer Navigation -->
 		<footer class="kiosk-footer">
+			<a href="{% url 'get_started' %}" class="btn btn-outline-secondary btn-lg">Back to Home</a>
 			<a href="{% url 'kiosk_menu' %}" class="btn btn-secondary btn-lg">Place Another Order</a>
 			<button id="refresh-btn" class="btn btn-primary btn-lg">
 				<i class="fa fa-refresh"></i> Refresh Status
@@ -128,18 +228,138 @@
 		</footer>
 	</div>
 
+	<div class="modal fade" id="policyHelpModal" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Cancellation and Refund Rules</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p class="mb-2"><strong>Eligibility:</strong> You can cancel only while the order is in
+						<strong>Pending</strong> status and within the allowed cancel window.
+					</p>
+					<p class="mb-2"><strong>After Preparation Starts:</strong> Once the order moves to
+						Preparing/Ready/Completed, cancellation is disabled.</p>
+					<p class="mb-2"><strong>Refunds:</strong> If payment is already marked Paid and cancellation is
+						accepted, payment status is changed to <strong>Refund Requested</strong> for staff processing.
+					</p>
+					<p class="mb-0"><strong>Need Help?</strong> Please contact the front counter staff and provide your
+						queue number and order ID.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Custom Order Cancellation Confirmation Modal -->
+	<div id="cancelOrderModal" class="custom-confirmation-modal" style="display: none;">
+		<div class="confirmation-overlay"></div>
+		<div class="confirmation-dialog">
+			<div class="confirmation-header" style="text-align: center; padding: 20px 20px 10px;">
+				<i class="fa fa-exclamation-triangle text-danger" style="font-size: 2.2rem; margin-bottom: 10px; display: block;"></i>
+				<h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Cancel Order</h3>
+			</div>
+			<div class="confirmation-body" style="padding: 15px 20px; text-align: center;">
+				<p style="margin: 0; font-size: 0.95rem; color: #666; line-height: 1.5;">Are you sure you want to cancel order <strong>Q-{% if order.queue_number > 999 %}{{ order.queue_number }}{% else %}{{ order.created_at|date:'dm' }}{{ order.queue_number|stringformat:'03d' }}{% endif %}</strong>?</p>
+			</div>
+			<div class="confirmation-footer" style="padding: 15px 20px; display: flex; gap: 10px; justify-content: center; background-color: #f8f9fa; border-top: 1px solid #eee;">
+				<button id="cancelOrderConfirmBtn" class="btn btn-danger" style="min-width: 140px; font-weight: 600;">Yes, Cancel</button>
+				<button id="cancelOrderCancelBtn" class="btn btn-secondary" style="min-width: 140px; font-weight: 600;">Cancel</button>
+			</div>
+		</div>
+	</div>
+
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script>
-		// Refresh status every 5 seconds
-		setInterval(function() {
-			location.reload();
-		}, 5000);
+		(function () {
+			var toggleBtn = document.getElementById('toggle-track-qr');
+			var panel = document.getElementById('track-qr-panel');
+			var refreshBtn = document.getElementById('refresh-btn');
+			var qrStateKey = 'trackQrOpen_{{ order.id }}';
 
-		// Manual refresh button
-		document.getElementById('refresh-btn').addEventListener('click', function() {
-			location.reload();
-		});
+			function isPanelOpen() {
+				return !!(panel && panel.style.display !== 'none');
+			}
+
+			function setPanel(open) {
+				if (!panel || !toggleBtn) return;
+				panel.style.display = open ? 'block' : 'none';
+				toggleBtn.textContent = open ? 'Hide QR' : 'Show QR';
+				try { sessionStorage.setItem(qrStateKey, open ? '1' : '0'); } catch (e) { }
+			}
+
+			if (toggleBtn && panel) {
+				// Restore previous QR panel state for this order.
+				var shouldOpen = false;
+				try { shouldOpen = sessionStorage.getItem(qrStateKey) === '1'; } catch (e) { }
+				setPanel(shouldOpen);
+
+				toggleBtn.addEventListener('click', function () {
+					setPanel(!isPanelOpen());
+				});
+			}
+
+			function isHelpModalOpen() {
+				var helpModal = document.getElementById('policyHelpModal');
+				if (!helpModal) return false;
+				return helpModal.classList.contains('show') || 
+				       helpModal.classList.contains('in') || 
+				       window.getComputedStyle(helpModal).display !== 'none';
+			}
+
+			function isCancelModalOpen() {
+				var cancelModal = document.getElementById('cancelOrderModal');
+				if (!cancelModal) return false;
+				return cancelModal.style.display === 'flex';
+			}
+
+			// Refresh status every 5 seconds, but don't force refresh while QR, help modal, or cancel modal is open.
+			setInterval(function () {
+				if (isPanelOpen() || isHelpModalOpen() || isCancelModalOpen()) return;
+				location.reload();
+			}, 5000);
+
+			// Custom cancel order confirmation modal listeners
+			var cancelBtn = document.getElementById('cancel-order-btn');
+			var cancelModal = document.getElementById('cancelOrderModal');
+			var cancelConfirmBtn = document.getElementById('cancelOrderConfirmBtn');
+			var cancelCancelBtn = document.getElementById('cancelOrderCancelBtn');
+			var cancelForm = cancelBtn ? cancelBtn.closest('form') : null;
+
+			if (cancelBtn && cancelModal && cancelConfirmBtn && cancelCancelBtn && cancelForm) {
+				cancelBtn.addEventListener('click', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					cancelModal.style.display = 'flex';
+				});
+
+				cancelCancelBtn.addEventListener('click', function () {
+					cancelModal.style.display = 'none';
+				});
+
+				var overlay = cancelModal.querySelector('.confirmation-overlay');
+				if (overlay) {
+					overlay.addEventListener('click', function () {
+						cancelModal.style.display = 'none';
+					});
+				}
+
+				cancelConfirmBtn.addEventListener('click', function () {
+					cancelForm.submit();
+				});
+			}
+
+			// Manual refresh button
+			if (refreshBtn) {
+				refreshBtn.addEventListener('click', function () {
+					location.reload();
+				});
+			}
+		})();
 	</script>
 </body>
+
 </html>

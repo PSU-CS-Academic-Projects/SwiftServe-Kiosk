@@ -1,9 +1,9 @@
 from django.contrib import admin
-from kioskapp.models import Order, Category, MenuItem, OrderItem, ItemConfiguration, Payment
+from kioskapp.models import Order, Category, MenuItem, OrderItem, ItemConfiguration, Payment, DineInSettings, Customer
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'parent')
     search_fields = ('name',)
 
 @admin.register(MenuItem)
@@ -22,18 +22,30 @@ class OrderItemInline(admin.TabularInline):
     model = OrderItem
     fields = ('item', 'quantity', 'subtotal')
 
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone_number', 'email', 'created_at')
+    search_fields = ('name', 'phone_number', 'email')
+    readonly_fields = ('created_at',)
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('queue_number', 'order_type', 'status', 'total_price', 'created_at')
+    list_display = ('queue_number', 'customer', 'order_type', 'party_size', 'status', 'total_price', 'created_at')
     list_filter = ('status', 'order_type', 'created_at')
-    search_fields = ('queue_number',)
+    search_fields = ('queue_number', 'customer__name', 'customer__phone_number')
     readonly_fields = ('created_at', 'queue_number')
     fieldsets = (
-        ('Order Info', {'fields': ('queue_number', 'order_type', 'total_price')}),
+        ('Order Info', {'fields': ('queue_number', 'customer', 'order_type', 'party_size', 'total_price')}),
         ('Status', {'fields': ('status',)}),
         ('Timestamps', {'fields': ('created_at',)}),
     )
     inlines = [OrderItemInline]
+
+
+@admin.register(DineInSettings)
+class DineInSettingsAdmin(admin.ModelAdmin):
+    list_display = ('is_available', 'estimated_wait_minutes', 'max_party_size', 'updated_at')
+    readonly_fields = ('updated_at',)
 
 @admin.register(ItemConfiguration)
 class ItemConfigurationAdmin(admin.ModelAdmin):

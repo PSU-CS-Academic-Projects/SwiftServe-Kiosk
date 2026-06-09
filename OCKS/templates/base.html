@@ -1,26 +1,492 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta name="description" content="">
 	<meta name="author" content="">
-	<link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap"
+		rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap"
+		rel="stylesheet">
 
-	<title>Klassy Cafe</title>
+	<title>SwiftServe Kiosk</title>
+
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
 	<link rel="stylesheet" href="{% static 'css/owl-carousel.css' %}">
 	<link rel="stylesheet" href="{% static 'css/lightbox.css' %}">
-    <style>
-      /* ensure page content isn't hidden under sticky header */
-      body { padding-top: 90px; }
-      @media (max-width: 767px) { body { padding-top: 110px; } }
-    </style>
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+			}
+		})();
+	</script>
+	<style>
+		/* Theme toggle button styling */
+		.theme-toggle-btn {
+			background: rgba(255, 255, 255, 0.18);
+			border: none;
+			color: white;
+			width: 38px;
+			height: 38px;
+			border-radius: 50%;
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.1rem;
+			transition: all 0.2s ease;
+			outline: none;
+			margin-left: 15px;
+			margin-top: 1px;
+			/* aligned vertically with 40px line-height links */
+			padding: 0;
+		}
+
+		.theme-toggle-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+			transform: scale(1.08);
+		}
+
+		@media (max-width: 991px) {
+			.theme-toggle-btn {
+				margin: 10px 0 10px 15px;
+			}
+		}
+
+		/* Dark theme global styles for landing and greeting pages */
+		body.dark-theme {
+			background-color: #121212 !important;
+			color: #e0e0e0 !important;
+		}
+
+		body.dark-theme .split-card {
+			background: #1e1e1e !important;
+			border-color: rgba(255, 255, 255, 0.08) !important;
+			box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+		}
+
+		body.dark-theme .welcome-title {
+			color: #ffffff !important;
+		}
+
+		body.dark-theme .welcome-subtitle {
+			color: #a0aec0 !important;
+		}
+
+		body.dark-theme .my-orders-pane {
+			background-color: #181818 !important;
+			border-color: rgba(255, 255, 255, 0.06) !important;
+		}
+
+		body.dark-theme .my-orders-pane-title {
+			color: #ffffff !important;
+		}
+
+		body.dark-theme .my-orders-table th {
+			color: #a0aec0 !important;
+		}
+
+		body.dark-theme .my-orders-table td {
+			color: #e0e0e0 !important;
+			border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+		}
+
+		body.dark-theme .my-orders-table tr {
+			border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+		}
+
+		body.dark-theme .my-order-track-btn {
+			border-color: rgba(251, 88, 73, 0.5) !important;
+		}
+
+		body.dark-theme .my-order-cancel-btn {
+			background: #1e1e1e !important;
+			border-color: rgba(255, 107, 107, 0.5) !important;
+		}
+
+		body.dark-theme .my-order-cancel-btn:hover {
+			background: #ff6b6b !important;
+		}
+
+		/* Landing page specific elements dark mode (home.html features) */
+		body.dark-theme .section-heading h2,
+		body.dark-theme .section-heading h6,
+		body.dark-theme #about h4,
+		body.dark-theme #about p,
+		body.dark-theme #reservation h2,
+		body.dark-theme #reservation p,
+		body.dark-theme #reservation label,
+		body.dark-theme #reservation .phone {
+			color: #ffffff !important;
+		}
+
+		body.dark-theme #chefs .chef-item .down-content h4,
+		body.dark-theme #chefs .chef-item .down-content span,
+		body.dark-theme #reservation .phone span a,
+		body.dark-theme #reservation .message span a {
+			color: #ffffff !important;
+		}
+
+		body.dark-theme .contact-form input,
+		body.dark-theme .contact-form textarea,
+		body.dark-theme .contact-form select {
+			background-color: #2d2d2d !important;
+			color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.15) !important;
+		}
+
+		body.dark-theme #about,
+		body.dark-theme #reservation,
+		body.dark-theme #menu,
+		body.dark-theme #chefs {
+			background-color: #121212 !important;
+		}
+
+		body.dark-theme .chef-item,
+		body.dark-theme .card {
+			background-color: #1e1e1e !important;
+			color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.08) !important;
+		}
+
+		body.dark-theme .contact-form,
+		body.dark-theme #contact {
+			background: #181818 !important;
+		}
+
+		body.dark-theme .form-control {
+			background-color: #2d2d2d !important;
+			color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.12) !important;
+		}
+
+		body.dark-theme .form-control:focus {
+			background-color: #3d3d3d !important;
+			color: #ffffff !important;
+		}
+
+		body.dark-theme footer {
+			background: #0d0d0d !important;
+			border-top: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
+		/* ensure page content isn't hidden under sticky header */
+		body {
+			padding-top: 90px;
+		}
+
+		@media (max-width: 767px) {
+			body {
+				padding-top: 110px;
+			}
+		}
+
+		/* style the logo with a premium white badge container to frame the solid white background on the orange header */
+		.header-area .main-nav .logo img {
+			max-height: 65px;
+			width: auto;
+			display: inline-block;
+			vertical-align: middle;
+			transition: all 0.3s ease;
+			background-color: #ffffff;
+			padding: 8px 20px;
+			border-radius: 30px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		}
+
+		.background-header .main-nav .logo img {
+			max-height: 50px;
+			padding: 6px 14px;
+		}
+
+		footer .logo img {
+			max-height: 42px;
+			width: auto;
+		}
+
+		/* Make the header orange to match the kiosk theme */
+		.header-area,
+		.background-header {
+			background: linear-gradient(135deg, #ff6b4a 0%, #fb5849 100%) !important;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+		}
+
+		.header-area .main-nav .nav li a,
+		.background-header .main-nav .nav li a {
+			color: #ffffff !important;
+		}
+
+		.header-area .main-nav .nav li:hover a,
+		.header-area .main-nav .nav li a.active,
+		.background-header .main-nav .nav li:hover a,
+		.background-header .main-nav .nav li a.active {
+			color: #ffe5e2 !important;
+		}
+
+		.header-area .main-nav .menu-trigger span,
+		.header-area .main-nav .menu-trigger span:before,
+		.header-area .main-nav .menu-trigger span:after,
+		.background-header .main-nav .menu-trigger span,
+		.background-header .main-nav .menu-trigger span:before,
+		.background-header .main-nav .menu-trigger span:after {
+			background-color: #ffffff !important;
+		}
+
+		/* Custom styling for the account dropdown submenu arrow trigger */
+		.header-area .main-nav .nav li.submenu.account-submenu {
+			position: relative;
+			padding-right: 35px !important;
+		}
+
+		.account-submenu:after {
+			display: none !important;
+		}
+
+		/* Disable hover dropdown for account submenu since we use click toggling */
+		.header-area .main-nav .nav li.submenu.account-submenu:hover ul,
+		.background-header .main-nav .nav li.submenu.account-submenu:hover ul {
+			visibility: hidden !important;
+			opacity: 0 !important;
+			transform: translateY(10px) !important;
+			transition: none !important;
+		}
+
+		.submenu-arrow-trigger {
+			position: absolute;
+			right: 0;
+			top: 0;
+			width: 35px;
+			height: 40px;
+			cursor: pointer;
+			z-index: 5;
+		}
+
+		.submenu-arrow-trigger:after {
+			font-family: FontAwesome;
+			content: "\f107";
+			font-size: 12px;
+			color: #ffffff !important; /* Keep white arrow */
+			position: absolute;
+			right: 18px; /* Same position as default template dark arrow */
+			top: 12px; /* Same position as default template dark arrow */
+			transition: color 0.3s ease;
+		}
+
+		.submenu-arrow-trigger:hover:after {
+			color: #ffe5e2 !important;
+		}
+
+		@media (max-width: 991px) {
+			.submenu-arrow-trigger {
+				right: 0;
+				top: 0;
+				width: 50px;
+				height: 50px;
+			}
+			.submenu-arrow-trigger:after {
+				right: 25px;
+				top: 15px;
+				font-size: 14px;
+				color: #3b566e !important;
+			}
+		}
+
+		/* Dropdown styling */
+		.header-area .main-nav .nav li.submenu.account-submenu ul,
+		.background-header .main-nav .nav li.submenu.account-submenu ul {
+			position: absolute;
+			width: 200px;
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+			background-color: #ffffff !important;
+			border-radius: 8px;
+			overflow: hidden;
+			border: 1px solid #e0e0e0;
+			top: 40px;
+			right: 0;
+			opacity: 0 !important;
+			visibility: hidden !important;
+			transform: translateY(10px) !important;
+			transition: all 0.2s ease-in-out !important;
+			z-index: 1000;
+		}
+
+		.header-area .main-nav .nav li.submenu.account-submenu ul.show-dropdown,
+		.background-header .main-nav .nav li.submenu.account-submenu ul.show-dropdown {
+			opacity: 1 !important;
+			visibility: visible !important;
+			transform: translateY(0) !important;
+		}
+
+		.account-submenu ul li {
+			width: 100% !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
+
+		.account-submenu ul li a {
+			display: block !important;
+			padding: 10px 15px !important;
+			font-size: 14px !important;
+			font-weight: 500 !important;
+			line-height: 20px !important;
+			color: #dc3545 !important; /* Delete account text in red */
+			background: #ffffff !important;
+			border: none !important;
+			border-bottom: 1px solid #eeeeee !important;
+			text-align: left !important;
+			transition: background 0.2s ease !important;
+		}
+
+		.account-submenu ul li a:hover {
+			background: #fff5f5 !important;
+			color: #bd2130 !important;
+		}
+
+		/* Dark theme dropdown styling */
+		body.dark-theme .account-submenu ul {
+			background-color: #1e1e1e !important;
+			border-color: rgba(255, 255, 255, 0.1) !important;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+		}
+
+		body.dark-theme .account-submenu ul li a {
+			background: #1e1e1e !important;
+			color: #ff6b6b !important;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+		}
+
+		body.dark-theme .account-submenu ul li a:hover {
+			background: #2b2b2b !important;
+			color: #ff4f4f !important;
+		}
+
+		/* Custom warning confirmation modal styling */
+		.custom-confirmation-modal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 10000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.confirmation-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+			backdrop-filter: blur(2px);
+		}
+
+		.confirmation-dialog {
+			position: relative;
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			max-width: 420px;
+			width: 90%;
+			overflow: hidden;
+			animation: modalSlideIn 0.3s ease-out;
+		}
+
+		@keyframes modalSlideIn {
+			from {
+				opacity: 0;
+				transform: translateY(-30px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.confirmation-header {
+			background: linear-gradient(135deg, #ff6b4a 0%, #fb5849 100%);
+			color: white;
+			padding: 25px 20px;
+			text-align: center;
+		}
+
+		.confirmation-header i {
+			font-size: 32px;
+			display: block;
+			margin-bottom: 10px;
+		}
+
+		.confirmation-header h3 {
+			margin: 0;
+			font-size: 20px;
+			font-weight: 700;
+		}
+
+		.confirmation-body {
+			padding: 25px 20px;
+			text-align: center;
+		}
+
+		.confirmation-body p {
+			margin: 0;
+			color: #555;
+			font-size: 15px;
+			line-height: 1.6;
+		}
+
+		.confirmation-footer {
+			padding: 15px 20px;
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			border-top: 1px solid #e0e0e0;
+			background-color: #f8f9fa;
+		}
+
+		.confirmation-footer .btn {
+			flex: 1;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		/* Dark theme modal overrides */
+		body.dark-theme .custom-confirmation-modal .confirmation-dialog {
+			background-color: #1e1e1e !important;
+			color: #ffffff !important;
+			border-color: rgba(255, 255, 255, 0.08) !important;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+		}
+		body.dark-theme .custom-confirmation-modal .confirmation-body p {
+			color: #e0e0e0 !important;
+		}
+		body.dark-theme .custom-confirmation-modal .confirmation-footer {
+			background-color: #181818 !important;
+			border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+		}
+	</style>
 </head>
 
 <body>
@@ -37,15 +503,36 @@
 			<div class="row">
 				<div class="col-12">
 					<nav class="main-nav">
-							<a href="{% url 'home_page' %}" class="logo">
-							<img src="{% static 'images/klassy-logo.png' %}" alt="Klassy Cafe">
+						<a href="{% url 'home_page' %}" class="logo">
+							<img src="{% static 'images/SSK_images/SSK_logo.png' %}" alt="SwiftServe Kiosk">
 						</a>
 						<ul class="nav">
-							<li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
 							<li class="scroll-to-section"><a href="#about">About</a></li>
-							<li class="scroll-to-section"><a href="#menu">Menu</a></li>
-							<li class="scroll-to-section"><a href="#chefs">Chefs</a></li>
 							<li class="scroll-to-section"><a href="#reservation">Contact Us</a></li>
+							{% if request.session.customer_id %}
+							<li class="submenu account-submenu">
+								<a href="{% url 'customer_logout' %}"
+									style="display: inline-block; padding-right: 0 !important;">Logout</a>
+								<span class="submenu-arrow-trigger" id="accountDropdownToggle"></span>
+								<ul id="accountDropdownMenu">
+									<li>
+										<form method="POST" action="{% url 'delete_customer_account' %}"
+											id="delete-account-form" style="display:none;">
+											{% csrf_token %}
+										</form>
+										<a href="javascript:void(0);" id="deleteAccountTrigger"
+											style="color: #dc3545 !important;">
+											<i class="fa fa-trash"></i> Delete My Account
+										</a>
+									</li>
+								</ul>
+							</li>
+							{% endif %}
+							<li>
+								<button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle dark mode">
+									<i class="fa fa-moon-o"></i>
+								</button>
+							</li>
 						</ul>
 						<a class="menu-trigger">
 							<span>Menu</span>
@@ -61,7 +548,7 @@
 	<footer>
 		<div class="container">
 			<div class="row">
-				<div class="col-lg-4 col-xs-12">
+				<div class="col-lg-6 col-xs-12">
 					<div class="right-text-content">
 						<ul class="social-icons">
 							<li><a href="#"><i class="fa fa-facebook"></i></a></li>
@@ -71,21 +558,40 @@
 						</ul>
 					</div>
 				</div>
-				<div class="col-lg-4">
-					<div class="logo">
-						<a href="{% url 'home_page' %}"><img src="{% static 'images/white-logo.png' %}" alt=""></a>
-					</div>
-				</div>
-				<div class="col-lg-4 col-xs-12">
+				<div class="col-lg-6 col-xs-12">
 					<div class="left-text-content">
-						<p>© Copyright Klassy Cafe Co.<br>Design: TemplateMo</p>
+						<p>© Copyright SwiftServe Kiosk.<br>Design: TemplateMo</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	</footer>
 
+	<!-- Custom Account Deletion Confirmation Modal -->
+	<div id="deleteAccountModal" class="custom-confirmation-modal" style="display: none;">
+		<div class="confirmation-overlay"></div>
+		<div class="confirmation-dialog">
+			<div class="confirmation-header" style="text-align: center; padding: 20px 20px 10px;">
+				<i class="fa fa-exclamation-triangle text-danger"
+					style="font-size: 2.2rem; margin-bottom: 10px; display: block;"></i>
+				<h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Account</h3>
+			</div>
+			<div class="confirmation-body" style="padding: 15px 20px; text-align: center;">
+				<p style="margin: 0; font-size: 0.95rem; color: #666; line-height: 1.5;">Are you absolutely sure you
+					want to delete your account? This action is permanent and cannot be undone.</p>
+			</div>
+			<div class="confirmation-footer"
+				style="padding: 15px 20px; display: flex; gap: 10px; justify-content: center; background-color: #f8f9fa; border-top: 1px solid #eee;">
+				<button id="deleteConfirmBtn" class="btn btn-danger" style="min-width: 140px; font-weight: 600;"
+					disabled>Yes, Delete (5s)</button>
+				<button id="deleteCancelBtn" class="btn btn-secondary"
+					style="min-width: 140px; font-weight: 600;">Cancel</button>
+			</div>
+		</div>
+	</div>
+
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
+	<script src="{% static 'js/dashboard-common.js' %}"></script>
 	<script src="{% static 'js/popper.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script src="{% static 'js/owl-carousel.js' %}"></script>
@@ -99,5 +605,90 @@
 	<script src="{% static 'js/lightbox.js' %}"></script>
 	<script src="{% static 'js/isotope.js' %}"></script>
 	<script src="{% static 'js/custom.js' %}"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var toggleBtn = document.getElementById('theme-toggle-btn');
+			if (toggleBtn) {
+				function updateToggleButton(isDark) {
+					var icon = toggleBtn.querySelector('i');
+					if (icon) {
+						icon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
+					}
+				}
+
+				// initialize button state
+				var isDark = document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme');
+				if (isDark) {
+					document.body.classList.add('dark-theme');
+				}
+				updateToggleButton(isDark);
+
+				toggleBtn.addEventListener('click', function () {
+					var activeDark = document.body.classList.toggle('dark-theme');
+					document.documentElement.classList.toggle('dark-theme', activeDark);
+					localStorage.setItem('theme', activeDark ? 'dark' : 'light');
+					updateToggleButton(activeDark);
+				});
+			}
+
+			// Caret account dropdown click logic (disable hover behavior)
+			var accountToggle = document.getElementById('accountDropdownToggle');
+			var accountMenu = document.getElementById('accountDropdownMenu');
+			if (accountToggle && accountMenu) {
+				accountToggle.addEventListener('click', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					accountMenu.classList.toggle('show-dropdown');
+				});
+				document.addEventListener('click', function () {
+					accountMenu.classList.remove('show-dropdown');
+				});
+			}
+
+			// Account deletion countdown modal logic
+			var deleteTrigger = document.getElementById('deleteAccountTrigger');
+			var modal = document.getElementById('deleteAccountModal');
+			var confirmBtn = document.getElementById('deleteConfirmBtn');
+			var cancelBtn = document.getElementById('deleteCancelBtn');
+			var form = document.getElementById('delete-account-form');
+			var timerInterval;
+
+			if (deleteTrigger && modal && confirmBtn && cancelBtn && form) {
+				deleteTrigger.addEventListener('click', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					if (accountMenu) accountMenu.classList.remove('show-dropdown');
+					modal.style.display = 'flex';
+
+					// Disable confirm button and start 5 second timer
+					confirmBtn.disabled = true;
+					var timeLeft = 5;
+					confirmBtn.textContent = 'Yes, Delete (' + timeLeft + 's)';
+
+					clearInterval(timerInterval);
+					timerInterval = setInterval(function () {
+						timeLeft--;
+						if (timeLeft > 0) {
+							confirmBtn.textContent = 'Yes, Delete (' + timeLeft + 's)';
+						} else {
+							clearInterval(timerInterval);
+							confirmBtn.disabled = false;
+							confirmBtn.textContent = 'Yes, Delete';
+						}
+					}, 1000);
+				});
+
+				cancelBtn.addEventListener('click', function () {
+					modal.style.display = 'none';
+					clearInterval(timerInterval);
+				});
+
+				confirmBtn.addEventListener('click', function () {
+					form.submit();
+				});
+			}
+		});
+	</script>
 </body>
+
 </html>
