@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -8,15 +9,41 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260608h">
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+				document.addEventListener('DOMContentLoaded', function () {
+					document.body.classList.add('dark-theme');
+				});
+			}
+		})();
+	</script>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 </head>
+
 <body>
 	<div class="admin-container">
 		<!-- Header -->
 		<header class="admin-header">
 			<div class="admin-header-content">
 				<h1><i class="fa fa-dashboard"></i> Admin Orders Dashboard</h1>
-				<a href="{% url 'admin:index' %}" class="btn btn-secondary">Back to Admin</a>
+				<div style="display: flex; align-items: center; gap: 10px;">
+					<button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle dark mode"
+						style="margin: 0; background: rgba(255, 255, 255, 0.15); border: none; color: white; width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;">
+						<i class="fa fa-moon-o"></i>
+					</button>
+					<a href="{% url 'admin:kioskapp_customer_changelist' %}" class="btn btn-info"><i class="fa fa-users"></i> Customers</a>
+					<a href="{% url 'admin:index' %}" class="btn btn-secondary">Back to Admin</a>
+				</div>
 			</div>
 		</header>
 
@@ -76,7 +103,8 @@
 					</div>
 					<div class="filter-field">
 						<label for="payment-filter">Filter by Payment</label>
-						<select id="payment-filter" name="payment_status" class="form-control" onchange="this.form.submit()">
+						<select id="payment-filter" name="payment_status" class="form-control"
+							onchange="this.form.submit()">
 							<option value="">All Payments</option>
 							{% for payment_status in payment_statuses %}
 							<option value="{{ payment_status }}" {% if selected_payment_status|lower == payment_status|lower %}selected{% endif %}>{{ payment_status }}</option>
@@ -89,7 +117,8 @@
 					<div class="filter-field filter-search-field">
 						<label for="search-orders">Search Orders</label>
 						<div class="input-group">
-							<input type="text" id="search-orders" name="search" class="form-control" placeholder="Search by order ID, queue #, type, payment..." value="{{ search_query }}">
+							<input type="text" id="search-orders" name="search" class="form-control"
+								placeholder="Search by order ID, queue #, type, payment..." value="{{ search_query }}">
 							<div class="input-group-append">
 								<button class="btn btn-primary" type="submit">Search</button>
 							</div>
@@ -129,18 +158,22 @@
 					</thead>
 					<tbody>
 						{% for order in orders %}
-						<tr class="order-row" data-order-id="{{ order.id }}">
+						<tr class="order-row" data-order-id="{{ order.id }}"
+							data-customer-name="{{ order.customer.name|default:'Guest' }}"
+							data-customer-phone="{{ order.customer.phone_number|default:'' }}">
 							<td>
-								<strong>Q-{{ order.queue_number|stringformat:"03d" }}</strong>
+								<strong>Q-{% if order.queue_number > 999 %}{{ order.queue_number }}{% else %}{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}{% endif %}</strong>
 							</td>
 							<td>#{{ order.id }}</td>
 							<td>
-								<span class="badge {% if order.order_type == 'dine_in' %}bg-primary{% else %}bg-info{% endif %}">
+								<span
+									class="badge {% if order.order_type == 'dine_in' %}bg-primary{% else %}bg-info{% endif %} order-type-badge">
 									{{ order.get_order_type_display }}
 								</span>
 							</td>
 							<td>
-								<button class="btn btn-sm btn-outline-secondary view-items-btn" type="button" data-order-id="{{ order.id }}">
+								<button class="btn btn-sm btn-outline-secondary view-items-btn" type="button"
+									data-order-id="{{ order.id }}">
 									View Items
 								</button>
 								<div class="d-none order-items-source" data-order-id="{{ order.id }}">
@@ -164,20 +197,24 @@
 							</td>
 							<td>₱{{ order.total_price }}</td>
 							<td>
-								<select class="form-control form-control-sm status-select" data-order-id="{{ order.id }}">
+								<select class="form-control form-control-sm status-select"
+									data-order-id="{{ order.id }}">
 									<option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
 									<option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
 									<option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>{% if order.order_type == 'take_out' %}Ready for Take Out{% elif order.order_type == 'dine_in' %}Ready for Dine In{% else %}Ready{% endif %}</option>
 									<option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+									<option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
 								</select>
 							</td>
 							<td>
 								{% with payment=order.payment %}
 								<div class="payment-control-row">
-									<span class="badge {% if payment.payment_status|lower == 'pending' %}bg-warning{% else %}bg-success{% endif %}">
+									<span
+										class="badge {% if payment.payment_status|lower == 'pending' %}bg-warning{% else %}bg-success{% endif %}">
 										{{ payment.get_method_display }}
 									</span>
-									<select class="form-control form-control-sm payment-status-select" data-order-id="{{ order.id }}">
+									<select class="form-control form-control-sm payment-status-select"
+										data-order-id="{{ order.id }}">
 										{% for payment_status in payment_statuses %}
 										<option value="{{ payment_status }}" {% if payment.payment_status|lower == payment_status|lower %}selected{% endif %}>{{ payment_status }}</option>
 										{% endfor %}
@@ -209,19 +246,22 @@
 					<ul class="pagination justify-content-center">
 						{% if page_obj.has_previous %}
 						<li class="page-item">
-							<a class="page-link" href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.previous_page_number }}">Previous</a>
+							<a class="page-link"
+								href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.previous_page_number }}">Previous</a>
 						</li>
 						{% else %}
 						<li class="page-item disabled"><span class="page-link">Previous</span></li>
 						{% endif %}
 
 						<li class="page-item disabled">
-							<span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+							<span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages
+								}}</span>
 						</li>
 
 						{% if page_obj.has_next %}
 						<li class="page-item">
-							<a class="page-link" href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.next_page_number }}">Next</a>
+							<a class="page-link"
+								href="?search={{ search_query|urlencode }}&status={{ request.GET.status|default:'' }}&payment_status={{ selected_payment_status|default:'' }}&page={{ page_obj.next_page_number }}">Next</a>
 						</li>
 						{% else %}
 						<li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -258,9 +298,35 @@
 	<script src="{% static 'js/popper.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script>
-	// expose backend URLs for shared script
-	window.updateOrderUrl = '{% url "update_order_status" %}';
-	window.updatePaymentUrl = '{% url "update_payment_status" %}';
+		// expose backend URLs for shared script
+		window.updateOrderUrl = '{% url "update_order_status" %}';
+		window.updatePaymentUrl = '{% url "update_payment_status" %}';
+
+		// Theme toggle functionality for admin dashboard
+		document.addEventListener('DOMContentLoaded', function () {
+			var toggleBtn = document.getElementById('theme-toggle-btn');
+			if (!toggleBtn) return;
+
+			function updateToggleButton(isDark) {
+				var icon = toggleBtn.querySelector('i');
+				if (icon) {
+					icon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
+				}
+			}
+
+			var isDark = document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme');
+			if (isDark) {
+				document.body.classList.add('dark-theme');
+			}
+			updateToggleButton(isDark);
+
+			toggleBtn.addEventListener('click', function () {
+				var activeDark = document.body.classList.toggle('dark-theme');
+				document.documentElement.classList.toggle('dark-theme', activeDark);
+				localStorage.setItem('theme', activeDark ? 'dark' : 'light');
+				updateToggleButton(activeDark);
+			});
+		});
 	</script>
 	<script src="{% static 'js/dashboard-common.js' %}"></script>
 
@@ -276,7 +342,7 @@
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			color: white;
 			padding: 20px 0;
-			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		}
 
 		.admin-header-content {
@@ -298,8 +364,8 @@
 
 		.filter-form {
 			display: grid;
-				grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) auto minmax(320px, 1fr);
-				gap: 14px;
+			grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) auto minmax(320px, 1fr);
+			gap: 14px;
 			align-items: center;
 		}
 
@@ -308,8 +374,8 @@
 			gap: 8px;
 			align-items: center;
 			justify-content: flex-start;
-				align-self: end;
-				padding-bottom: 1px;
+			align-self: end;
+			padding-bottom: 1px;
 		}
 
 		.filter-field {
@@ -320,17 +386,17 @@
 
 		.filter-search-field .input-group {
 			flex-wrap: nowrap;
-				width: 100%;
+			width: 100%;
 		}
 
 		.filter-search-field .form-control,
-			.filter-field .form-control {
-					height: calc(2rem + 2px);
+		.filter-field .form-control {
+			height: calc(2rem + 2px);
 		}
 
-				.filter-search-field {
-					min-width: 0;
-			}
+		.filter-search-field {
+			min-width: 0;
+		}
 
 		.filter-summary {
 			display: flex;
@@ -362,8 +428,20 @@
 			border-radius: 8px;
 			padding: 20px;
 			display: flex;
+			align-items: center;
 			gap: 20px;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
+
+		.stat-content h5 {
+			margin: 0 0 4px 0;
+			font-size: 0.9rem;
+			color: #666;
+			font-weight: 600;
+			line-height: 1.2;
+			min-height: 2.4em;
+			display: flex;
+			align-items: center;
 		}
 
 		.stat-icon {
@@ -377,10 +455,21 @@
 			color: white;
 		}
 
-		.stat-icon.pending { background-color: #ffc107; }
-		.stat-icon.preparing { background-color: #ff6b6b; }
-		.stat-icon.ready { background-color: #51cf66; }
-		.stat-icon.completed { background-color: #339af0; }
+		.stat-icon.pending {
+			background-color: #ffc107;
+		}
+
+		.stat-icon.preparing {
+			background-color: #ff6b6b;
+		}
+
+		.stat-icon.ready {
+			background-color: #51cf66;
+		}
+
+		.stat-icon.completed {
+			background-color: #339af0;
+		}
 
 		.stat-number {
 			font-size: 32px;
@@ -392,7 +481,12 @@
 			background: white;
 			border-radius: 8px;
 			overflow: hidden;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
+
+		.orders-table th,
+		.orders-table td {
+			vertical-align: middle !important;
 		}
 
 		.order-row.updated {
@@ -466,7 +560,10 @@
 		}
 
 		@media print {
-			.admin-header, .filters-section, .btn {
+
+			.admin-header,
+			.filters-section,
+			.btn {
 				display: none !important;
 			}
 		}
@@ -480,6 +577,75 @@
 				justify-content: flex-start;
 			}
 		}
+
+		/* Order type badge standardized styling */
+		.order-type-badge {
+			display: inline-block;
+			width: 85px;
+			text-align: center;
+			padding: 5px 0 !important;
+		}
+
+		/* Row transitions */
+		.order-row {
+			transition: background-color 0.5s ease;
+		}
+
+		/* Dark theme overrides for update highlights */
+		body.dark-theme .order-row.updated {
+			background-color: rgba(40, 167, 69, 0.25) !important;
+			color: #ffffff !important;
+		}
+
+		/* Dark theme overrides for filter chips */
+		body.dark-theme .filter-chip {
+			background-color: rgba(118, 75, 162, 0.2) !important;
+			color: #b197fc !important;
+			border: 1px solid rgba(177, 151, 252, 0.3) !important;
+		}
+
+		/* Dark theme overrides for views inside modals/tables */
+		body.dark-theme .view-items-box {
+			background-color: #2b2b2b !important;
+			border-color: rgba(255, 255, 255, 0.08) !important;
+			color: #ffffff !important;
+		}
+		body.dark-theme .view-items-head {
+			border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+			color: #e0e0e0 !important;
+		}
+		body.dark-theme .order-detail-info {
+			background-color: #2b2b2b !important;
+			border-color: rgba(255, 255, 255, 0.08) !important;
+			color: #ffffff !important;
+		}
+
+		/* Single ticket printing setup */
+		#print-receipt-section {
+			display: none;
+		}
+
+		@media print {
+			body {
+				background-color: #ffffff !important;
+				color: #000000 !important;
+			}
+			.admin-container,
+			.modal,
+			.modal-backdrop,
+			.btn,
+			div[role="dialog"] {
+				display: none !important;
+			}
+			#print-receipt-section {
+				display: block !important;
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+			}
+		}
 	</style>
 </body>
+
 </html>

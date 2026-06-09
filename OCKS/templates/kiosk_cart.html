@@ -1,15 +1,35 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Shopping Cart - Kiosk</title>
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+				document.addEventListener('DOMContentLoaded', function () {
+					document.body.classList.add('dark-theme');
+				});
+			}
+		})();
+	</script>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260608h">
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 </head>
+
 <body>
 	<div class="kiosk-container">
 		<!-- Header -->
@@ -39,41 +59,58 @@
 					<table class="table">
 						<thead>
 							<tr>
-								<th>Item</th>
-								<th>Price</th>
-								<th>Qty</th>
-								<th>Subtotal</th>
-								<th>Action</th>
+								<th class="text-center">Item</th>
+								<th class="text-center">Price</th>
+								<th class="text-center">Qty</th>
+								<th class="text-center">Subtotal</th>
+								<th class="text-center">Action</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for item in cart_items %}
 							<tr data-item-id="{{ item.menu_item.id }}">
-								<td>
-									<div>
-										<strong>{{ item.menu_item.name }}</strong>
-										{% if item.customizations %}
-										<br>
-										<small class="text-muted">
-											{% for custom in item.customizations %}
-											{{ custom.name }}: {{ custom.value }}<br>
-											{% endfor %}
-										</small>
+								<td class="text-left">
+									<div class="cart-item-row">
+										{% if item.menu_item.image %}
+										<img src="{{ item.menu_item.image.url }}" alt="{{ item.menu_item.name }}"
+											class="cart-item-image">
+										{% else %}
+										<div class="cart-item-image-placeholder">
+											<i class="fa fa-image"></i>
+										</div>
 										{% endif %}
+										<div class="cart-item-detail">
+											<strong class="cart-item-name">{{ item.menu_item.name }}</strong>
+											{% if item.customizations %}
+											<div class="cart-item-customizations">
+												{% for custom in item.customizations %}
+												<span class="custom-badge">{{ custom.name }}: {{ custom.value }}</span>
+												{% endfor %}
+											</div>
+											{% endif %}
+										</div>
 									</div>
 								</td>
-								<td>₱{{ item.menu_item.price }}</td>
-								<td>
-									<div class="input-group input-group-sm" style="width: 100px;">
-										<button class="btn btn-outline-secondary qty-minus" data-item-id="{{ item.menu_item.id }}">−</button>
-										<input type="number" class="form-control text-center qty-input" value="{{ item.quantity }}" readonly>
-										<button class="btn btn-outline-secondary qty-plus" data-item-id="{{ item.menu_item.id }}">+</button>
+								<td class="text-center cart-item-price">₱{{ item.menu_item.price }}</td>
+								<td class="text-center">
+									<div class="cart-qty-selector">
+										<button type="button" class="qty-btn qty-minus"
+											data-item-id="{{ item.menu_item.id }}" aria-label="Decrease quantity">
+											<i class="fa fa-minus"></i>
+										</button>
+										<input type="number" class="qty-input" value="{{ item.quantity }}" min="1"
+											max="20" aria-label="Quantity" data-item-id="{{ item.menu_item.id }}">
+										<button type="button" class="qty-btn qty-plus"
+											data-item-id="{{ item.menu_item.id }}" aria-label="Increase quantity">
+											<i class="fa fa-plus"></i>
+										</button>
 									</div>
 								</td>
-								<td>₱<span class="subtotal">{{ item.subtotal }}</span></td>
-								<td>
-									<button class="btn btn-sm btn-danger remove-item" data-item-id="{{ item.menu_item.id }}">
-										<i class="fa fa-trash"></i>
+								<td class="text-center cart-item-subtotal">₱<span class="subtotal">{{ item.subtotal }}</span></td>
+								<td class="text-center">
+									<button type="button" class="cart-remove-btn remove-item"
+										data-item-id="{{ item.menu_item.id }}" aria-label="Remove item">
+										<i class="fa fa-trash-o"></i>
 									</button>
 								</td>
 							</tr>
@@ -84,24 +121,17 @@
 
 				<!-- Cart Summary -->
 				<div class="cart-summary">
-					<div class="summary-row">
-						<span>Subtotal:</span>
-						<span>₱{{ cart_total }}</span>
-					</div>
-					<div class="summary-row">
-						<span>Estimated Tax (12%):</span>
-						<span>₱<span id="tax">0.00</span></span>
-					</div>
 					<div class="summary-row total">
-						<strong>Total:</strong>
+						<strong>Total Amount:</strong>
 						<strong>₱<span id="final-total">{{ cart_total }}</span></strong>
 					</div>
 					<div class="cart-summary-actions">
 						<a href="{% url 'kiosk_menu' %}" class="btn btn-secondary btn-lg">Back to Menu</a>
 						{% if not cart_empty %}
-						<form method="POST" action="{% url 'order_create' %}">
+						<form method="POST" action="{% url 'order_create' %}" class="w-100 m-0">
 							{% csrf_token %}
-							<button type="button" id="proceed-checkout-btn" class="btn btn-primary btn-lg">Proceed to Checkout</button>
+							<button type="button" id="proceed-checkout-btn" class="btn btn-primary btn-lg">Proceed to
+								Checkout</button>
 						</form>
 						{% endif %}
 					</div>
@@ -111,24 +141,97 @@
 		</main>
 	</div>
 
+	<!-- Custom Confirmation / Alert Modal -->
+	<div id="customModal" class="custom-confirmation-modal" style="display: none;">
+		<div class="confirmation-overlay"></div>
+		<div class="confirmation-dialog">
+			<div class="confirmation-header">
+				<i id="customModalIcon" class="fa fa-exclamation-circle"></i>
+				<h3 id="customModalTitle">Confirm Action</h3>
+			</div>
+			<div class="confirmation-body">
+				<p id="customModalMessage"></p>
+			</div>
+			<div class="confirmation-footer">
+				<button id="customModalConfirmBtn" class="btn btn-primary">Yes, Continue</button>
+				<button id="customModalCancelBtn" class="btn btn-secondary">Cancel</button>
+			</div>
+		</div>
+	</div>
+
 	<script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script src="{% static 'js/dashboard-common.js' %}"></script>
 	<script>
 
+		// Custom Modal Functionality
+		function showCustomModal(options) {
+			const modal = document.getElementById('customModal');
+			const titleEl = document.getElementById('customModalTitle');
+			const messageEl = document.getElementById('customModalMessage');
+			const iconEl = document.getElementById('customModalIcon');
+			const confirmBtn = document.getElementById('customModalConfirmBtn');
+			const cancelBtn = document.getElementById('customModalCancelBtn');
+
+			titleEl.textContent = options.title || 'Notification';
+			messageEl.textContent = options.message || '';
+			iconEl.className = 'fa ' + (options.icon || 'fa-exclamation-circle');
+
+			if (options.isAlert) {
+				cancelBtn.style.display = 'none';
+				confirmBtn.textContent = options.confirmText || 'OK';
+				confirmBtn.style.flex = '1';
+			} else {
+				cancelBtn.style.display = 'block';
+				confirmBtn.textContent = options.confirmText || 'Yes, Continue';
+				cancelBtn.textContent = options.cancelText || 'Cancel';
+				confirmBtn.style.flex = '1';
+			}
+
+			modal.style.display = 'flex';
+
+			function cleanup() {
+				modal.style.display = 'none';
+				confirmBtn.removeEventListener('click', handleConfirm);
+				cancelBtn.removeEventListener('click', handleCancel);
+			}
+
+			function handleConfirm() {
+				cleanup();
+				if (options.onConfirm) options.onConfirm();
+			}
+
+			function handleCancel() {
+				cleanup();
+				if (options.onCancel) options.onCancel();
+			}
+
+			confirmBtn.addEventListener('click', handleConfirm);
+			cancelBtn.addEventListener('click', handleCancel);
+			modal.querySelector('.confirmation-overlay').addEventListener('click', handleCancel);
+		}
 
 		// Quantity controls
 		document.querySelectorAll('.qty-plus').forEach(btn => {
-			btn.addEventListener('click', function() {
+			btn.addEventListener('click', function () {
 				const itemId = this.dataset.itemId;
 				const qtyInput = this.parentElement.querySelector('input.qty-input');
 				const newQty = parseInt(qtyInput.value) + 1;
+				if (newQty > 20) {
+					showCustomModal({
+						title: 'Limit Reached',
+						message: 'Maximum limit of 20 items reached for this item.',
+						icon: 'fa-exclamation-triangle',
+						isAlert: true
+					});
+					return;
+				}
 				updateQuantity(itemId, newQty);
 			});
 		});
 
 		document.querySelectorAll('.qty-minus').forEach(btn => {
-			btn.addEventListener('click', function() {
+			btn.addEventListener('click', function () {
 				const itemId = this.dataset.itemId;
 				const qtyInput = this.parentElement.querySelector('input.qty-input');
 				const newQty = Math.max(1, parseInt(qtyInput.value) - 1);
@@ -136,11 +239,59 @@
 			});
 		});
 
+		// Direct quantity text typing changes
+		document.querySelectorAll('input.qty-input').forEach(input => {
+			input.dataset.oldValue = input.value;
+
+			input.addEventListener('change', function () {
+				const itemId = this.dataset.itemId;
+				let val = parseInt(this.value);
+
+				if (isNaN(val) || val < 1) {
+					this.value = this.dataset.oldValue;
+					showCustomModal({
+						title: 'Invalid Quantity',
+						message: 'Please enter a valid quantity of 1 or more.',
+						icon: 'fa-exclamation-triangle',
+						isAlert: true
+					});
+					return;
+				}
+
+				if (val > 20) {
+					this.value = 20;
+					val = 20;
+					showCustomModal({
+						title: 'Limit Reached',
+						message: 'Maximum limit of 20 items reached for this item.',
+						icon: 'fa-exclamation-triangle',
+						isAlert: true
+					});
+				}
+
+				this.dataset.oldValue = val;
+				updateQuantity(itemId, val);
+			});
+
+			input.addEventListener('keydown', function (e) {
+				if (e.key === 'Enter') {
+					this.blur();
+				}
+			});
+		});
+
 		// Remove item
 		document.querySelectorAll('.remove-item').forEach(btn => {
-			btn.addEventListener('click', function() {
+			btn.addEventListener('click', function () {
 				const itemId = this.dataset.itemId;
-				removeFromCart(itemId);
+				showCustomModal({
+					title: 'Confirm Removal',
+					message: 'Are you sure you want to remove this item from your cart?',
+					icon: 'fa-trash',
+					onConfirm: function () {
+						removeFromCart(itemId);
+					}
+				});
 			});
 		});
 
@@ -156,48 +307,43 @@
 					quantity: quantity
 				})
 			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					location.reload();
-				}
-			});
-		}
-
-		function removeFromCart(itemId) {
-			if (confirm('Remove this item from cart?')) {
-				fetch('{% url "remove_from_cart" %}', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-CSRFToken': getCookie('csrftoken')
-					},
-					body: JSON.stringify({
-						item_id: itemId
-					})
-				})
 				.then(response => response.json())
 				.then(data => {
 					if (data.success) {
 						location.reload();
 					}
 				});
-			}
 		}
 
-		// Calculate and update tax
+		function removeFromCart(itemId) {
+			fetch('{% url "remove_from_cart" %}', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken')
+				},
+				body: JSON.stringify({
+					item_id: itemId
+				})
+			})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						location.reload();
+					}
+				});
+		}
+
+		// Calculate and update totals
 		function updateTotals() {
 			const subtotal = parseFloat('{{ cart_total }}');
-			const tax = subtotal * 0.12;
-			const total = subtotal + tax;
-			document.getElementById('tax').textContent = tax.toFixed(2);
-			document.getElementById('final-total').textContent = total.toFixed(2);
+			document.getElementById('final-total').textContent = subtotal.toFixed(2);
 		}
 
 		// Proceed to checkout
 		const proceedCheckoutBtn = document.getElementById('proceed-checkout-btn');
 		if (proceedCheckoutBtn) {
-			proceedCheckoutBtn.addEventListener('click', function() {
+			proceedCheckoutBtn.addEventListener('click', function () {
 				window.location.href = '{% url "kiosk_checkout" %}';
 			});
 		}
@@ -205,4 +351,5 @@
 		updateTotals();
 	</script>
 </body>
+
 </html>

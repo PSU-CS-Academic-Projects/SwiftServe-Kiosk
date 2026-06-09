@@ -5,7 +5,27 @@ class Customer(models.Model):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15, unique=True)
     email = models.EmailField(unique=True, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def masked_phone(self):
+        phone = self.phone_number
+        if not phone:
+            return ""
+        if len(phone) >= 7:
+            start = phone[:4]
+            end = phone[-4:]
+            middle = '*' * (len(phone) - 8)
+            if len(phone) < 9:
+                start = phone[:3]
+                end = phone[-3:]
+                middle = '*' * (len(phone) - 6)
+            return f"{start}{middle}{end}"
+        else:
+            if len(phone) > 2:
+                return phone[0] + ('*' * (len(phone) - 2)) + phone[-1]
+            return '***'
 
     def __str__(self):
         return f"{self.name} ({self.phone_number})"

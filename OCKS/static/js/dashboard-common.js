@@ -251,16 +251,94 @@
             }));
         }
 
-        // print-order
+        // print-order (ticket receipt printing)
         const printBtns = document.querySelectorAll('.print-order');
         if (printBtns.length) {
             printBtns.forEach(btn => btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                if (!row) return;
+
+                const queueNum = row.querySelector('td:nth-child(1)').textContent.trim();
+                const orderId = row.querySelector('td:nth-child(2)').textContent.trim().replace('#', '');
+                const orderType = row.querySelector('.order-type-badge') ? row.querySelector('.order-type-badge').textContent.trim() : row.querySelector('td:nth-child(3)').textContent.trim();
+                const totalPrice = row.querySelector('td:nth-child(5)').textContent.trim();
+                const orderTime = row.querySelector('td:nth-child(8) small') ? row.querySelector('td:nth-child(8) small').textContent.trim() : '';
+                const customerName = row.dataset.customerName || 'Guest';
+                const customerPhone = row.dataset.customerPhone || 'N/A';
+
+                const itemsSource = row.querySelector('.order-items-source');
+                let itemsHTML = '';
+                if (itemsSource) {
+                    const rows = itemsSource.querySelectorAll('.view-items-row');
+                    rows.forEach(itemRow => {
+                        const name = itemRow.querySelector('.item-name').textContent.trim();
+                        const qty = itemRow.querySelector('.item-qty').textContent.trim();
+                        const subtotal = itemRow.querySelector('.item-subtotal').textContent.trim();
+                        
+                        const isCustomization = itemRow.classList.contains('text-muted');
+                        
+                        if (isCustomization) {
+                            itemsHTML += `
+                                <tr>
+                                    <td colspan="3" style="font-size: 0.8rem; color: #555; padding-left: 10px; font-style: italic;">
+                                        &nbsp;&nbsp;${name}
+                                    </td>
+                                </tr>`;
+                        } else {
+                            itemsHTML += `
+                                <tr style="border-bottom: 1px dashed #eee;">
+                                    <td style="padding: 4px 0; max-width: 180px; word-wrap: break-word;">${name}</td>
+                                    <td style="text-align: center; padding: 4px 0;">${qty}</td>
+                                    <td style="text-align: right; padding: 4px 0;">${subtotal}</td>
+                                </tr>`;
+                        }
+                    });
+                }
+
+                // Create or reuse print section in body
+                let printSection = document.getElementById('print-receipt-section');
+                if (!printSection) {
+                    printSection = document.createElement('div');
+                    printSection.id = 'print-receipt-section';
+                    document.body.appendChild(printSection);
+                }
+                printSection.innerHTML = `
+                    <div class="print-ticket" style="font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 10px; color: #000; background: #fff;">
+                        <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: bold; letter-spacing: 1px;">SWIFT SERVE KIOSK</h3>
+                            <p style="margin: 5px 0 0; font-size: 0.85rem; text-transform: uppercase;">Order Ticket</p>
+                        </div>
+                        <div style="font-size: 0.85rem; line-height: 1.4; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                            <p style="margin: 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()} | ${orderTime}</p>
+                            <p style="margin: 0;"><strong>Order ID:</strong> #${orderId}</p>
+                            <p style="margin: 0;"><strong>Queue Num:</strong> <span style="font-size: 1.15rem; font-weight: bold;">${queueNum}</span></p>
+                            <p style="margin: 0;"><strong>Order Type:</strong> ${orderType.toUpperCase()}</p>
+                            <p style="margin: 0;"><strong>Customer:</strong> ${customerName} (${customerPhone || 'N/A'})</p>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 10px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #000;">
+                                    <th style="text-align: left; padding-bottom: 5px;">Item</th>
+                                    <th style="text-align: center; padding-bottom: 5px; width: 40px;">Qty</th>
+                                    <th style="text-align: right; padding-bottom: 5px; width: 80px;">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHTML || '<tr><td colspan="3" style="text-align:center;">No items found</td></tr>'}
+                            </tbody>
+                        </table>
+                        <div style="border-top: 1px dashed #000; padding-top: 10px; text-align: right; font-size: 1rem; font-weight: bold;">
+                            TOTAL: ${totalPrice}
+                        </div>
+                    </div>`;
+
                 try {
                     if (!hasPrintBackGuard && window.history && window.history.pushState) {
                         window.history.pushState({ printBackGuard: true }, '', window.location.href);
                         hasPrintBackGuard = true;
                     }
                 } catch (e) { /* ignore */ }
+
                 window.print();
             }));
         }

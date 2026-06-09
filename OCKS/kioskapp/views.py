@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.list import ListView
 from django.views.generic import DetailView, TemplateView
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.hashers import make_password, check_password
 import json
 import re
 from collections import defaultdict
@@ -289,6 +290,9 @@ class OrderCreateView(TemplateView):
     """Create an order from cart session"""
     template_name = 'kiosk_receipt.html'
     
+    def get(self, request, *args, **kwargs):
+        return redirect('kiosk_menu')
+        
     def post(self, request, *args, **kwargs):
         cart = request.session.get('cart', {})
         order_type = request.POST.get('order_type')
@@ -395,9 +399,9 @@ class OrderCreateView(TemplateView):
         # Get estimated wait time
         estimated_wait = calculate_estimated_wait_time()
         
-        # Calculate tax (12%)
-        tax_amount = total_price * Decimal('0.12')
-        total_with_tax = total_price + tax_amount
+        # Simulating flat menu pricing (tax is inclusive or not added)
+        tax_amount = Decimal('0.00')
+        total_with_tax = total_price
         
         context = {
             'order': order,
@@ -420,6 +424,17 @@ class OrderStatusView(DetailView):
     context_object_name = 'order'
     pk_url_kwarg = 'pk'
     
+    def get_object(self, queryset=None):
+        order = super().get_object(queryset)
+        session_customer_id = self.request.session.get('customer_id')
+        if order.customer_id:
+            if session_customer_id != order.customer_id:
+                raise Http404("Order not found or access denied.")
+        else:
+            if session_customer_id is not None:
+                raise Http404("Order not found or access denied.")
+        return order
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         order = self.get_object()
@@ -497,7 +512,7 @@ def add_to_cart(request):
         # enforce per-item max_quantity
         try:
             menu_item = MenuItem.objects.get(id=item_id)
-            max_q = int(menu_item.max_quantity or 99)
+            max_q = min(int(menu_item.max_quantity or 20), 20)
         except MenuItem.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
 
@@ -557,9 +572,9 @@ def update_cart_item(request):
             # enforce per-item max_quantity
             try:
                 menu_item = MenuItem.objects.get(id=int(item_id))
-                max_q = int(menu_item.max_quantity or 99)
+                max_q = min(int(menu_item.max_quantity or 20), 20)
             except MenuItem.DoesNotExist:
-                max_q = 99
+                max_q = 20
 
             if quantity <= 0:
                 del cart[item_id]
@@ -627,12 +642,23 @@ class CustomerLoginView(TemplateView):
     """Customer login view"""
     template_name = 'customer_login.html'
     
+    def get(self, request, *args, **kwargs):
+        if request.session.get('customer_id'):
+            return redirect('home_page')
+        remembered_phone_or_email = request.COOKIES.get('remembered_phone_or_email', '')
+        return render(request, self.template_name, {
+            'phone_or_email': remembered_phone_or_email,
+            'remember_me': bool(remembered_phone_or_email)
+        })
+        
     def post(self, request, *args, **kwargs):
         phone_or_email = request.POST.get('phone_or_email', '').strip()
+        password = request.POST.get('password', '')
         
-        if not phone_or_email:
+        if not phone_or_email or not password:
             return render(request, self.template_name, {
-                'error': 'Please enter a phone number or email'
+                'error': 'Please enter your phone number/email and password',
+                'phone_or_email': phone_or_email
             })
         
         try:
@@ -643,7 +669,22 @@ class CustomerLoginView(TemplateView):
             
             if not customer:
                 return render(request, self.template_name, {
-                    'error': 'No customer found with that phone/email. Please register first.'
+                    'error': 'Invalid phone number/email or password',
+                    'phone_or_email': phone_or_email
+                })
+            
+            # If customer has no password set (legacy account)
+            if not customer.password:
+                return render(request, self.template_name, {
+                    'error': 'Your account does not have a password set. Please register again to secure your account.',
+                    'phone_or_email': phone_or_email
+                })
+            
+            # Verify password
+            if not check_password(password, customer.password):
+                return render(request, self.template_name, {
+                    'error': 'Invalid phone number/email or password',
+                    'phone_or_email': phone_or_email
                 })
             
             # Store customer in session
@@ -652,10 +693,20 @@ class CustomerLoginView(TemplateView):
             request.session['customer_phone'] = customer.phone_number
             request.session['show_welcome_card'] = True
             
-            return redirect('get_started')
+            # Persist session if remember_me is ticked
+            response = redirect('home_page')
+            if request.POST.get('remember_me'):
+                request.session.set_expiry(2592000)  # 30 days
+                response.set_cookie('remembered_phone_or_email', phone_or_email, max_age=2592000)
+            else:
+                request.session.set_expiry(0)  # Expire on browser close
+                response.delete_cookie('remembered_phone_or_email')
+            
+            return response
         except Exception as e:
             return render(request, self.template_name, {
-                'error': f'Login error: {str(e)}'
+                'error': f'Login error: {str(e)}',
+                'phone_or_email': phone_or_email
             })
 
 
@@ -663,10 +714,17 @@ class CustomerRegisterView(TemplateView):
     """Customer registration view"""
     template_name = 'customer_register.html'
     
+    def get(self, request, *args, **kwargs):
+        if request.session.get('customer_id'):
+            return redirect('home_page')
+        return super().get(request, *args, **kwargs)
+        
     def post(self, request, *args, **kwargs):
         name = request.POST.get('name', '').strip()
         phone_number = request.POST.get('phone_number', '').strip()
         email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
         
         errors = {}
         
@@ -674,6 +732,18 @@ class CustomerRegisterView(TemplateView):
             errors['name'] = 'Name is required'
         if not phone_number:
             errors['phone_number'] = 'Phone number is required'
+        if not email:
+            errors['email'] = 'Email is required'
+        
+        if not password:
+            errors['password'] = 'Password is required'
+        elif len(password) < 6:
+            errors['password'] = 'Password must be at least 6 characters'
+            
+        if not confirm_password:
+            errors['confirm_password'] = 'Please confirm your password'
+        elif password != confirm_password:
+            errors['confirm_password'] = 'Passwords do not match'
         
         if errors:
             context = {
@@ -702,11 +772,12 @@ class CustomerRegisterView(TemplateView):
                     'email': email
                 })
             
-            # Create new customer
+            # Create new customer with hashed password
             customer = Customer.objects.create(
                 name=name,
                 phone_number=phone_number,
-                email=email if email else None
+                email=email if email else None,
+                password=make_password(password)
             )
             
             # Store customer in session
@@ -714,8 +785,7 @@ class CustomerRegisterView(TemplateView):
             request.session['customer_name'] = customer.name
             request.session['customer_phone'] = customer.phone_number
             request.session['show_welcome_card'] = True
-            
-            return redirect('get_started')
+            return redirect('home_page')
         except Exception as e:
             return render(request, self.template_name, {
                 'errors': {'general': f'Registration error: {str(e)}'},
@@ -731,6 +801,24 @@ def customer_logout(request):
     request.session.pop('customer_name', None)
     request.session.pop('customer_phone', None)
     return redirect('home')
+
+
+@require_POST
+def delete_customer_account(request):
+    """Delete the currently logged in customer account"""
+    customer_id = request.session.get('customer_id')
+    if customer_id:
+        try:
+            Customer.objects.filter(id=customer_id).delete()
+        except Exception:
+            pass
+        # Clear session
+        request.session.pop('customer_id', None)
+        request.session.pop('customer_name', None)
+        request.session.pop('customer_phone', None)
+    response = redirect('home')
+    response.delete_cookie('remembered_phone_or_email')
+    return response
 
 
 @require_POST

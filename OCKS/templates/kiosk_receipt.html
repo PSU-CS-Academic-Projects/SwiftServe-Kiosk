@@ -1,15 +1,35 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Order Receipt - Kiosk</title>
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+				document.addEventListener('DOMContentLoaded', function () {
+					document.body.classList.add('dark-theme');
+				});
+			}
+		})();
+	</script>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260608g">
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 </head>
+
 <body>
 	<div class="kiosk-container">
 		<!-- Header -->
@@ -29,9 +49,9 @@
 					<p class="queue-label">Your Queue Number</p>
 					<div class="queue-number">
 						{% if order.queue_number > 999 %}
-							Q-{{ order.queue_number }}
+						Q-{{ order.queue_number }}
 						{% else %}
-							Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
+						Q-{{ order.created_at|date:"dm" }}{{ order.queue_number|stringformat:"03d" }}
 						{% endif %}
 					</div>
 					<p class="queue-message">Please wait for your number to be called</p>
@@ -59,7 +79,7 @@
 						</div>
 						<div class="detail-row">
 							<span>Customer Phone:</span>
-							<span>{{ order.customer.phone_number }}</span>
+							<span>{{ order.customer.masked_phone }}</span>
 						</div>
 						{% endif %}
 						<div class="detail-row">
@@ -90,39 +110,33 @@
 				<!-- Items List -->
 				<div class="receipt-section">
 					<h4>Items Ordered</h4>
-					<table class="receipt-table items-table">
-						<tbody>
-							{% for item in order_items %}
-							<tr>
-								<td>
-									<strong>{{ item.item.name }}</strong> x {{ item.quantity }}
-									{% if item.itemconfiguration_set.all %}
-									<br>
-									<small class="text-muted">
-										{% for config in item.itemconfiguration_set.all %}
-										• {{ config.option_name }}: {{ config.option_value }}<br>
-										{% endfor %}
-									</small>
-									{% endif %}
-								</td>
-								<td class="text-end">₱{{ item.subtotal }}</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
+					<div class="payment-details">
+						<table class="receipt-table items-table">
+							<tbody>
+								{% for item in order_items %}
+								<tr>
+									<td>
+										<strong>{{ item.item.name }}</strong> x {{ item.quantity }}
+										{% if item.itemconfiguration_set.all %}
+										<br>
+										<small class="text-muted">
+											{% for config in item.itemconfiguration_set.all %}
+											• {{ config.option_name }}: {{ config.option_value }}<br>
+											{% endfor %}
+										</small>
+										{% endif %}
+									</td>
+									<td class="text-end">₱{{ item.subtotal }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
 				</div>
 
 				<!-- Payment Section -->
 				<div class="receipt-section payment-section">
 					<div class="payment-details">
-						<div class="detail-row">
-							<span>Subtotal:</span>
-							<span>₱{{ order.total_price }}</span>
-						</div>
-						<div class="detail-row">
-							<span>Tax (12%):</span>
-							<span>₱{{ tax_amount|floatformat:2 }}</span>
-						</div>
 						<div class="detail-row total-row">
 							<strong>Total Amount:</strong>
 							<strong>₱{{ total_with_tax|floatformat:2 }}</strong>
@@ -139,15 +153,17 @@
 				</div>
 
 				<div class="receipt-section">
-					<div class="payment-details">
-						<div class="detail-row">
-							<span>Cancellation Rule:</span>
-							<span>Pending only, within {{ cancel_window_seconds }}s</span>
-						</div>
-						<div class="detail-row">
-							<span>Refund Rule:</span>
-							<span>{{ refund_note }}</span>
-						</div>
+					<h4>Cancellation & Refund Policy</h4>
+					<div class="policy-box">
+						<p class="policy-item">
+							<i class="fa fa-info-circle"></i>
+							<span><strong>Cancellation:</strong> Orders can be cancelled only while the status is
+								<em>Pending</em> and within {{ cancel_window_seconds }} seconds of placement.</span>
+						</p>
+						<p class="policy-item">
+							<i class="fa fa-credit-card"></i>
+							<span><strong>Refunds:</strong> {{ refund_note }}</span>
+						</p>
 					</div>
 				</div>
 
@@ -171,6 +187,7 @@
 
 		<!-- Footer Navigation -->
 		<footer class="kiosk-footer">
+			<a href="{% url 'get_started' %}" class="btn btn-outline-secondary btn-lg">Back to Home</a>
 			<a href="{% url 'kiosk_menu' %}" class="btn btn-primary btn-lg">Place Another Order</a>
 			<button id="print-btn" class="btn btn-secondary btn-lg">
 				<i class="fa fa-print"></i> Print Receipt
@@ -182,19 +199,22 @@
 	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script>
 		// Print receipt
-		document.getElementById('print-btn').addEventListener('click', function() {
+		document.getElementById('print-btn').addEventListener('click', function () {
 			window.print();
 		});
 
 		// Auto-refresh order status
-		setInterval(function() {
+		setInterval(function () {
 			// Optional: Auto-refresh to show updated status
 			// location.reload();
 		}, 10000); // Every 10 seconds
 	</script>
 	<style>
 		@media print {
-			.kiosk-header, .kiosk-footer, #print-btn {
+
+			.kiosk-header,
+			.kiosk-footer,
+			#print-btn {
 				display: none !important;
 			}
 		}
@@ -224,4 +244,5 @@
 		}
 	</style>
 </body>
+
 </html>

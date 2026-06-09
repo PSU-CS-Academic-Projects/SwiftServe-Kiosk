@@ -23,7 +23,8 @@ from kioskapp.views import (
     HomePageView, GetStartedView, KioskMenuView, KioskCartView, KioskCheckoutView,
     OrderCreateView, OrderStatusView, AdminOrdersDashboardView,
     add_to_cart, remove_from_cart, update_cart_item, update_order_status, update_payment_status,
-    CustomerLoginView, CustomerRegisterView, customer_logout, cancel_customer_order
+    CustomerLoginView, CustomerRegisterView, customer_logout, cancel_customer_order,
+    delete_customer_account
 )
 from kioskapp import views
 
@@ -39,6 +40,7 @@ urlpatterns = [
     path('customer/login/', CustomerLoginView.as_view(), name='customer_login'),
     path('customer/register/', CustomerRegisterView.as_view(), name='customer_register'),
     path('customer/logout/', customer_logout, name='customer_logout'),
+    path('customer/delete/', delete_customer_account, name='delete_customer_account'),
     
     # Kiosk workflow
     path('kiosk/menu/', KioskMenuView.as_view(), name='kiosk_menu'),

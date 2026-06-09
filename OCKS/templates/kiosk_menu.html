@@ -1,34 +1,54 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>Kiosk Menu - Order Now</title>
+	<title>SwiftServe Kiosk - Order Now</title>
+	<script>
+		// Immediate check for saved theme to prevent FOUC
+		(function () {
+			var savedTheme = localStorage.getItem('theme');
+			if (savedTheme === 'dark') {
+				document.documentElement.classList.add('dark-theme');
+				document.addEventListener('DOMContentLoaded', function () {
+					document.body.classList.add('dark-theme');
+				});
+			}
+		})();
+	</script>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.css' %}">
 	<link rel="stylesheet" href="{% static 'css/templatemo-klassy-cafe.css' %}">
-	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260601a">
+	<link rel="stylesheet" href="{% static 'css/kiosk.css' %}?v=20260608g">
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="{% static 'images/SSK_images/favicon.ico' %}" type="image/x-icon">
+	<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/SSK_images/favicon-32x32.png' %}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/SSK_images/favicon-16x16.png' %}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/SSK_images/apple-touch-icon.png' %}">
+	<link rel="manifest" href="{% static 'images/SSK_images/site.webmanifest' %}">
 </head>
+
 <body>
-		<div id="preloader">
-			<div class="jumper">
+	<div id="preloader">
+		<div class="jumper">
 
-			</div>
 		</div>
+	</div>
 
-		<script>
+	<script>
 		// Fallback to ensure preloader is hidden if other scripts fail
-		(function(){
+		(function () {
 			var pre = document.getElementById('preloader');
-			if(!pre) return;
-			function hidePre(){ try{ pre.style.display='none'; pre.style.visibility='hidden'; }catch(e){} }
-			if(document.readyState === 'complete') hidePre();
+			if (!pre) return;
+			function hidePre() { try { pre.style.display = 'none'; pre.style.visibility = 'hidden'; } catch (e) { } }
+			if (document.readyState === 'complete') hidePre();
 			window.addEventListener('load', hidePre);
-			document.addEventListener('DOMContentLoaded', function(){ setTimeout(hidePre, 600); });
+			document.addEventListener('DOMContentLoaded', function () { setTimeout(hidePre, 600); });
 			// safety timeout
 			setTimeout(hidePre, 3000);
 		})();
-		</script>
+	</script>
 
 	<div class="kiosk-container">
 		<!-- Side rail (hamburger drawer) -->
@@ -56,7 +76,7 @@
 		<header class="kiosk-header">
 			<div class="kiosk-header-top">
 				<div class="kiosk-title" id="home-logo" style="cursor: pointer;" title="Click to return home">
-					<h1>Klassy Cafe</h1>
+					<h1>SwiftServe Kiosk</h1>
 					<p>Digital Ordering Kiosk</p>
 				</div>
 				<div class="kiosk-actions">
@@ -64,10 +84,11 @@
 					<div style="width:1px;height:1px;overflow:hidden;visibility:hidden;" aria-hidden="true"></div>
 				</div>
 			</div>
-                
+
 			<div class="kiosk-header-bottom">
 				<div id="category-bar" class="category-bar collapsed" aria-expanded="false">
-					<button id="toggle-cat-btn" class="toggle-cat-btn" aria-controls="category-filter" aria-expanded="false">Categories ▾</button>
+					<button id="toggle-cat-btn" class="toggle-cat-btn" aria-controls="category-filter"
+						aria-expanded="false">Categories ▾</button>
 					<div class="category-filter" id="category-filter">
 						<button class="category-btn active" data-category="all">All Items</button>
 						{% for category in top_categories %}
@@ -90,14 +111,21 @@
 					<div class="menu-grid drink-group-grid">
 						{% for group in menu_groups %}
 						{% if group.category.id == sub.id %}
-						<div class="menu-card" data-category="{{ group.category.id }}" {% if group.category.parent %}data-category-parent="{{ group.category.parent.id }}"{% else %}data-category-parent="{{ group.category.id }}"{% endif %}>
+						<div class="menu-card" data-category="{{ group.category.id }}"
+							data-category-parent="{{ group.category.parent.id|default:group.category.id }}">
 							{% if group.default_variant.image_url %}
-								<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}" class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async" data-item-name="{{ group.base_name|escape }}" data-item-price="{{ group.default_variant.price }}" data-item-description="{{ group.description|default_if_none:''|escape }}" data-item-image="{{ group.default_variant.image_url }}">
+							<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}"
+								class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async"
+								data-item-name="{{ group.base_name|escape }}"
+								data-item-price="{{ group.default_variant.price }}"
+								data-item-description="{{ group.description|default_if_none:''|escape }}"
+								data-item-image="{{ group.default_variant.image_url }}">
 							{% else %}
-								<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button" tabindex="0" aria-label="Preview {{ group.base_name }}">
-									<i class="fa fa-image"></i>
-									<p>No Image</p>
-								</div>
+							<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button"
+								tabindex="0" aria-label="Preview {{ group.base_name }}">
+								<i class="fa fa-image"></i>
+								<p>No Image</p>
+							</div>
 							{% endif %}
 							<div class="menu-card-body">
 								<h5 class="menu-card-title">{{ group.base_name }}</h5>
@@ -106,9 +134,17 @@
 								{% endif %}
 								<div class="menu-card-footer menu-card-footer-size">
 									{% if group.type == 'size_group' %}
-									<div class="size-selector" role="radiogroup" aria-label="Select size for {{ group.base_name }}">
+									<div class="size-selector" role="radiogroup"
+										aria-label="Select size for {{ group.base_name }}">
 										{% for variant in group.variants %}
-										<button type="button" class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}" data-item-id="{{ variant.id }}" data-item-name="{{ group.base_name }} {{ variant.size_name }}" data-item-price="{{ variant.price }}" data-item-image="{{ variant.image_url }}" aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}" aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
+										<button type="button"
+											class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}"
+											data-item-id="{{ variant.id }}"
+											data-item-name="{{ group.base_name }} {{ variant.size_name }}"
+											data-item-price="{{ variant.price }}"
+											data-item-image="{{ variant.image_url }}"
+											aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}"
+											aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
 											<span class="size-option-label">{{ variant.size_name }}</span>
 										</button>
 										{% endfor %}
@@ -116,7 +152,11 @@
 									{% endif %}
 									<div class="menu-card-footer-actions">
 										<span class="price selected-price">₱ {{ group.default_variant.price }}</span>
-										<button class="btn btn-sm btn-success add-to-cart-btn" data-item-id="{{ group.default_variant.id }}" data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}" data-item-price="{{ group.default_variant.price }}" data-item-image="{{ group.default_variant.image_url }}">
+										<button class="btn btn-sm btn-success add-to-cart-btn"
+											data-item-id="{{ group.default_variant.id }}"
+											data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}"
+											data-item-price="{{ group.default_variant.price }}"
+											data-item-image="{{ group.default_variant.image_url }}">
 											Add to cart
 										</button>
 									</div>
@@ -133,14 +173,21 @@
 			<!-- Menu Grid -->
 			<div class="menu-grid" id="menu-grid">
 				{% for group in menu_groups %}
-				<div class="menu-card" data-category="{{ group.category.id }}" {% if group.category.parent %}data-category-parent="{{ group.category.parent.id }}"{% else %}data-category-parent="{{ group.category.id }}"{% endif %}>
+				<div class="menu-card" data-category="{{ group.category.id }}"
+					data-category-parent="{{ group.category.parent.id|default:group.category.id }}">
 					{% if group.default_variant.image_url %}
-						<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}" class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async" data-item-name="{{ group.base_name|escape }}" data-item-price="{{ group.default_variant.price }}" data-item-description="{{ group.description|default_if_none:''|escape }}" data-item-image="{{ group.default_variant.image_url }}">
+					<img src="{{ group.default_variant.image_url }}" alt="{{ group.base_name }}"
+						class="menu-card-image menu-card-preview-trigger" loading="lazy" decoding="async"
+						data-item-name="{{ group.base_name|escape }}"
+						data-item-price="{{ group.default_variant.price }}"
+						data-item-description="{{ group.description|default_if_none:''|escape }}"
+						data-item-image="{{ group.default_variant.image_url }}">
 					{% else %}
-						<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button" tabindex="0" aria-label="Preview {{ group.base_name }}">
-							<i class="fa fa-image"></i>
-							<p>No Image</p>
-						</div>
+					<div class="menu-card-image-placeholder menu-card-preview-trigger" role="button" tabindex="0"
+						aria-label="Preview {{ group.base_name }}">
+						<i class="fa fa-image"></i>
+						<p>No Image</p>
+					</div>
 					{% endif %}
 					<div class="menu-card-body">
 						<h5 class="menu-card-title">{{ group.base_name }}</h5>
@@ -149,9 +196,16 @@
 						{% endif %}
 						<div class="menu-card-footer menu-card-footer-size">
 							{% if group.type == 'size_group' %}
-							<div class="size-selector" role="radiogroup" aria-label="Select size for {{ group.base_name }}">
+							<div class="size-selector" role="radiogroup"
+								aria-label="Select size for {{ group.base_name }}">
 								{% for variant in group.variants %}
-								<button type="button" class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}" data-item-id="{{ variant.id }}" data-item-name="{{ group.base_name }} {{ variant.size_name }}" data-item-price="{{ variant.price }}" data-item-image="{{ variant.image_url }}" aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}" aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
+								<button type="button"
+									class="size-option {% if variant.id == group.default_variant.id %}active{% endif %}"
+									data-item-id="{{ variant.id }}"
+									data-item-name="{{ group.base_name }} {{ variant.size_name }}"
+									data-item-price="{{ variant.price }}" data-item-image="{{ variant.image_url }}"
+									aria-pressed="{% if variant.id == group.default_variant.id %}true{% else %}false{% endif %}"
+									aria-label="Select {{ variant.size_name }} for {{ group.base_name }}">
 									<span class="size-option-label">{{ variant.size_name }}</span>
 								</button>
 								{% endfor %}
@@ -159,7 +213,11 @@
 							{% endif %}
 							<div class="menu-card-footer-actions">
 								<span class="price selected-price">₱ {{ group.default_variant.price }}</span>
-								<button class="btn btn-sm btn-success add-to-cart-btn" data-item-id="{{ group.default_variant.id }}" data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}" data-item-price="{{ group.default_variant.price }}" data-item-image="{{ group.default_variant.image_url }}">
+								<button class="btn btn-sm btn-success add-to-cart-btn"
+									data-item-id="{{ group.default_variant.id }}"
+									data-item-name="{{ group.base_name }} {{ group.default_variant.size_name|default:'' }}"
+									data-item-price="{{ group.default_variant.price }}"
+									data-item-image="{{ group.default_variant.image_url }}">
 									Add to cart
 								</button>
 							</div>
@@ -184,9 +242,12 @@
 	<button id="hamburger-btn" class="hamburger-btn hamburger-floating" aria-label="Open categories">☰</button>
 
 	<!-- Floating cart (bottom-right) -->
-	<div id="floating-cart" class="floating-cart" aria-live="polite" style="position:fixed; inset: auto 18px 16px auto; z-index:900;">
+	<div id="floating-cart" class="floating-cart" aria-live="polite"
+		style="position:fixed; inset: auto 18px 16px auto; z-index:900;">
 		<div class="floating-cart-controls" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-			<button id="cart-stack-toggle" class="btn btn-sm cart-stack-toggle" style="display:none;" aria-pressed="false" title="Hide item stack" aria-label="Hide item stack"><i id="cart-stack-icon" class="fa fa-eye" aria-hidden="true"></i></button>
+			<button id="cart-stack-toggle" class="btn btn-sm cart-stack-toggle" style="display:none;"
+				aria-pressed="false" title="Hide item stack" aria-label="Hide item stack"><i id="cart-stack-icon"
+					class="fa fa-eye" aria-hidden="true"></i></button>
 			<button id="cart-btn" class="btn cart-floating-btn" aria-label="Open cart">
 				<i class="fa fa-shopping-cart"></i>
 				<span id="cart-count" class="badge">0</span>
@@ -196,11 +257,13 @@
 	</div>
 
 	<!-- Image Preview Modal -->
-	<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewTitle" aria-hidden="true">
+	<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewTitle"
+		aria-hidden="true">
 		<div class="modal-dialog modal-xl modal-dialog-centered image-preview-modal-dialog" role="document">
 			<div class="modal-content">
 				<h5 class="sr-only" id="imagePreviewTitle">Menu Preview</h5>
-				<button type="button" class="image-preview-close" data-dismiss="modal" aria-label="Close">&times;</button>
+				<button type="button" class="image-preview-close" data-dismiss="modal"
+					aria-label="Close">&times;</button>
 				<div class="modal-body">
 					<div class="image-preview-stage" id="imagePreviewStage">
 						<div class="image-preview-wrap">
@@ -269,6 +332,7 @@
 				opacity: 0;
 				transform: translateY(-30px);
 			}
+
 			to {
 				opacity: 1;
 				transform: translateY(0);
@@ -427,7 +491,7 @@
 				btn.classList.toggle('active', isActive);
 				btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 			});
-			try { localStorage.setItem('menuItemsViewMode', mode); } catch (e) {}
+			try { localStorage.setItem('menuItemsViewMode', mode); } catch (e) { }
 		}
 
 		try {
@@ -437,7 +501,7 @@
 		}
 
 		viewModeButtons.forEach(btn => {
-			btn.addEventListener('click', function() {
+			btn.addEventListener('click', function () {
 				setMenuViewMode(this.dataset.menuView);
 			});
 		});
@@ -446,13 +510,13 @@
 			const hidden = localStorage.getItem('cartPreviewHidden');
 			if (hidden === '1') {
 				cartPreview.classList.add('hidden');
-				if (cartStackToggle) { cartStackToggle.setAttribute('aria-pressed', 'true'); cartStackToggle.title = 'Show item stack'; cartStackToggle.setAttribute('aria-label', 'Show item stack'); if(cartStackIcon){ cartStackIcon.classList.remove('fa-eye'); cartStackIcon.classList.add('fa-eye-slash'); } }
+				if (cartStackToggle) { cartStackToggle.setAttribute('aria-pressed', 'true'); cartStackToggle.title = 'Show item stack'; cartStackToggle.setAttribute('aria-label', 'Show item stack'); if (cartStackIcon) { cartStackIcon.classList.remove('fa-eye'); cartStackIcon.classList.add('fa-eye-slash'); } }
 			}
-		} catch (e) {}
+		} catch (e) { }
 		setCartStackToggleVisibility(Object.keys(cart).reduce((count, itemId) => count + ((cart[itemId] && cart[itemId].quantity) ? cart[itemId].quantity : 0), 0) > 0);
 
 		if (cartStackToggle) {
-			cartStackToggle.addEventListener('click', function() {
+			cartStackToggle.addEventListener('click', function () {
 				const isHidden = cartPreview.classList.toggle('hidden');
 				this.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
 				this.title = isHidden ? 'Show item stack' : 'Hide item stack';
@@ -461,7 +525,7 @@
 					cartStackIcon.classList.toggle('fa-eye');
 					cartStackIcon.classList.toggle('fa-eye-slash');
 				}
-				try { localStorage.setItem('cartPreviewHidden', isHidden ? '1' : '0'); } catch(e) {}
+				try { localStorage.setItem('cartPreviewHidden', isHidden ? '1' : '0'); } catch (e) { }
 			});
 		}
 		let previewZoom = 1;
@@ -504,13 +568,13 @@
 			previewModalElement.modal('show');
 		}
 
-		imagePreviewStage.addEventListener('click', function(e) {
+		imagePreviewStage.addEventListener('click', function (e) {
 			if (e.target === imagePreviewStage) {
 				previewModalElement.modal('hide');
 			}
 		});
 
-		imagePreviewStage.addEventListener('wheel', function(e) {
+		imagePreviewStage.addEventListener('wheel', function (e) {
 			e.preventDefault();
 			const stageRect = imagePreviewStage.getBoundingClientRect();
 			const oldZoom = previewZoom;
@@ -536,11 +600,11 @@
 			updatePreviewPosition();
 		}, { passive: false });
 
-		previewImage.addEventListener('dragstart', function(e) {
+		previewImage.addEventListener('dragstart', function (e) {
 			e.preventDefault();
 		});
 
-		previewImage.addEventListener('pointerdown', function(e) {
+		previewImage.addEventListener('pointerdown', function (e) {
 			if (previewZoom <= 1) return;
 			e.preventDefault();
 			isPanning = true;
@@ -552,7 +616,7 @@
 			updatePreviewPosition();
 		});
 
-		previewImage.addEventListener('pointermove', function(e) {
+		previewImage.addEventListener('pointermove', function (e) {
 			if (!isPanning) return;
 			previewPanX = panBaseX + (e.clientX - panStartX);
 			previewPanY = panBaseY + (e.clientY - panStartY);
@@ -570,19 +634,19 @@
 
 		previewImage.addEventListener('pointerup', endPan);
 		previewImage.addEventListener('pointercancel', endPan);
-		previewImage.addEventListener('dblclick', function(e) {
+		previewImage.addEventListener('dblclick', function (e) {
 			e.preventDefault();
 			previewModalElement.modal('hide');
 		});
 
 		document.querySelectorAll('.menu-card-preview-trigger').forEach(trigger => {
-			trigger.addEventListener('click', function(e) {
+			trigger.addEventListener('click', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 				openImagePreviewFromElement(this);
 			});
 
-			trigger.addEventListener('keydown', function(e) {
+			trigger.addEventListener('keydown', function (e) {
 				if (e.key === 'Enter' || e.key === ' ') {
 					e.preventDefault();
 					openImagePreviewFromElement(this);
@@ -593,13 +657,13 @@
 		// Logo click handler - with cart confirmation
 		const homeLogo = document.getElementById('home-logo');
 		if (homeLogo) {
-			homeLogo.addEventListener('click', function() {
+			homeLogo.addEventListener('click', function () {
 				const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-				
+
 				if (totalItems > 0) {
 					showConfirmation(
 						'You have items in your cart. Are you sure you want to go back to home? Your cart will be cleared.',
-						function(confirmed) {
+						function (confirmed) {
 							if (confirmed) {
 								window.location.href = '{% url "home_page" %}';
 							}
@@ -612,40 +676,40 @@
 			});
 		}
 
-			// Toggle between normal grid and grouped drink view
-			function showMenuMode(categoryId) {
-				if (!categoryId) return;
-				// If Drinks category is selected, show the grouped drink view
-				if (drinksCategoryId && String(categoryId) === String(drinksCategoryId)) {
-					if (drinkGroupView) drinkGroupView.style.display = 'block';
-					if (menuGrid) menuGrid.style.display = 'none';
-					document.body.classList.add('view-drinks-grouped');
-				} else {
-					if (drinkGroupView) drinkGroupView.style.display = 'none';
-					if (menuGrid) menuGrid.style.display = '';
-					document.body.classList.remove('view-drinks-grouped');
-				}
+		// Toggle between normal grid and grouped drink view
+		function showMenuMode(categoryId) {
+			if (!categoryId) return;
+			// If Drinks category is selected, show the grouped drink view
+			if (drinksCategoryId && String(categoryId) === String(drinksCategoryId)) {
+				if (drinkGroupView) drinkGroupView.style.display = 'block';
+				if (menuGrid) menuGrid.style.display = 'none';
+				document.body.classList.add('view-drinks-grouped');
+			} else {
+				if (drinkGroupView) drinkGroupView.style.display = 'none';
+				if (menuGrid) menuGrid.style.display = '';
+				document.body.classList.remove('view-drinks-grouped');
 			}
+		}
 
-			// Category filtering (top-level categories only)
-			categoryBtns.forEach(btn => {
-				btn.addEventListener('click', function() {
-					categoryBtns.forEach(b => b.classList.remove('active'));
-					this.classList.add('active');
-					const categoryId = this.dataset.category;
+		// Category filtering (top-level categories only)
+		categoryBtns.forEach(btn => {
+			btn.addEventListener('click', function () {
+				categoryBtns.forEach(b => b.classList.remove('active'));
+				this.classList.add('active');
+				const categoryId = this.dataset.category;
 
-					// Switch view mode (grouped drinks vs grid)
-					showMenuMode(categoryId);
+				// Switch view mode (grouped drinks vs grid)
+				showMenuMode(categoryId);
 
-					menuCards.forEach(card => {
-						if (categoryId === 'all' || card.dataset.category === categoryId || card.dataset.categoryParent === categoryId) {
-							card.style.display = 'block';
-						} else {
-							card.style.display = 'none';
-						}
-					});
+				menuCards.forEach(card => {
+					if (categoryId === 'all' || card.dataset.category === categoryId || card.dataset.categoryParent === categoryId) {
+						card.style.display = ''; // let CSS decide (flex in row mode, block in card mode)
+					} else {
+						card.style.display = 'none';
+					}
 				});
 			});
+		});
 
 
 
@@ -669,7 +733,7 @@
 
 		document.querySelectorAll('.menu-card').forEach(card => syncCardVariant(card));
 		document.querySelectorAll('.size-option').forEach(option => {
-			option.addEventListener('click', function() {
+			option.addEventListener('click', function () {
 				const card = this.closest('.menu-card');
 				if (!card) return;
 				card.querySelectorAll('.size-option').forEach(btn => {
@@ -683,16 +747,16 @@
 		});
 
 		document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-			btn.addEventListener('click', function(e) {
+			btn.addEventListener('click', function (e) {
 				e.preventDefault();
 				const itemId = this.dataset.itemId;
 				const itemName = this.dataset.itemName;
 				const itemPrice = parseFloat(this.dataset.itemPrice);
-                // find image src for animation/preview
-                let card = this.closest('.menu-card');
-                let imgEl = card.querySelector('img') || card.querySelector('.menu-card-image-placeholder');
-	                let imgSrc = this.dataset.itemImage || (imgEl && imgEl.tagName === 'IMG' ? imgEl.src : '{% static "images/slide-01.jpg" %}');
-				
+				// find image src for animation/preview
+				let card = this.closest('.menu-card');
+				let imgEl = card.querySelector('img') || card.querySelector('.menu-card-image-placeholder');
+				let imgSrc = this.dataset.itemImage || (imgEl && imgEl.tagName === 'IMG' ? imgEl.src : '{% static "images/slide-01.jpg" %}');
+
 				if (!cart[itemId]) {
 					cart[itemId] = {
 						name: itemName,
@@ -702,9 +766,13 @@
 						customizations: []
 					};
 				}
+				if (cart[itemId].quantity >= 20) {
+					alert('Maximum limit of 20 items reached for this item.');
+					return;
+				}
 				cart[itemId].quantity += 1;
 				// animate image to cart, then update UI and send backend
-				animateImageToCart(imgSrc, this, function() {
+				animateImageToCart(imgSrc, this, function () {
 					updateCartUI();
 					// Send to backend
 					addToCartAPI(itemId, 1, []);
@@ -722,13 +790,13 @@
 			if (expanded) {
 				categoryBar.classList.remove('collapsed');
 				categoryBar.classList.add('expanded');
-				toggleCatBtn.setAttribute('aria-expanded','true');
+				toggleCatBtn.setAttribute('aria-expanded', 'true');
 				toggleCatBtn.textContent = 'Categories ▴';
-				sessionStorage.setItem('categoryBarExpanded','1');
+				sessionStorage.setItem('categoryBarExpanded', '1');
 			} else {
 				categoryBar.classList.remove('expanded');
 				categoryBar.classList.add('collapsed');
-				toggleCatBtn.setAttribute('aria-expanded','false');
+				toggleCatBtn.setAttribute('aria-expanded', 'false');
 				toggleCatBtn.textContent = 'Categories ▾';
 				sessionStorage.removeItem('categoryBarExpanded');
 			}
@@ -737,7 +805,7 @@
 		// initialize from session or default collapsed
 		if (savedState === '1') setCategoryBarExpanded(true); else setCategoryBarExpanded(false);
 
-		toggleCatBtn.addEventListener('click', function(){
+		toggleCatBtn.addEventListener('click', function () {
 			const expanded = categoryBar.classList.contains('expanded');
 			setCategoryBarExpanded(!expanded);
 		});
@@ -778,10 +846,10 @@
 						{ transform: `translate(${deltaX}px, ${deltaY}px) scale(0.5)`, opacity: 0.6 }
 					];
 					const anim = flyItem.animate(keyframes, { duration: 650, easing: 'linear', fill: 'forwards' });
-					anim.onfinish = function() { try { flyItem.remove(); } catch(e){} if (onComplete) onComplete(); };
+					anim.onfinish = function () { try { flyItem.remove(); } catch (e) { } if (onComplete) onComplete(); };
 				} catch (e) {
 					// fallback to jQuery animate if Web Animations not available
-					$(flyItem).animate({ left: cartRect.left + 10, top: cartRect.top + 10, width: 24, height: 24, opacity: 0.6 }, 650, 'linear', function() { $(this).remove(); if (onComplete) onComplete(); });
+					$(flyItem).animate({ left: cartRect.left + 10, top: cartRect.top + 10, width: 24, height: 24, opacity: 0.6 }, 650, 'linear', function () { $(this).remove(); if (onComplete) onComplete(); });
 				}
 			} catch (e) { /* fail silently */ }
 		}
@@ -815,20 +883,20 @@
 		}
 
 		if (hamburgerBtn) {
-			hamburgerBtn.addEventListener('click', function() {
+			hamburgerBtn.addEventListener('click', function () {
 				if (sideRail && sideRail.classList.contains('open')) closeRail(); else openRail();
 			});
 		}
 
 		if (sideRailClose) sideRailClose.addEventListener('click', closeRail);
 		if (sideRailOverlay) sideRailOverlay.addEventListener('click', closeRail);
-		document.addEventListener('keydown', function(e) {
+		document.addEventListener('keydown', function (e) {
 			if (e.key === 'Escape' && sideRail && sideRail.classList.contains('open')) closeRail();
 		});
 
 		// Wire side-rail category buttons to the existing hidden category buttons
 		document.querySelectorAll('.side-cat-btn').forEach(btn => {
-			btn.addEventListener('click', function() {
+			btn.addEventListener('click', function () {
 				const target = Array.from(categoryBtns).find(b => b.dataset.category === this.dataset.category);
 				if (target) target.click();
 				syncRailSelection(this.dataset.category, null);
@@ -843,14 +911,14 @@
 		}
 
 		// Cart button
-		cartBtn.addEventListener('click', function() {
+		cartBtn.addEventListener('click', function () {
 			if (Object.keys(cart).length > 0) {
 				window.location.href = '{% url "kiosk_cart" %}';
 			}
 		});
 
 		// Proceed to cart
-		proceedBtn.addEventListener('click', function() {
+		proceedBtn.addEventListener('click', function () {
 			if (Object.keys(cart).length > 0) {
 				window.location.href = '{% url "kiosk_cart" %}';
 			}
@@ -884,7 +952,7 @@
 				removeBtn.className = 'thumb-remove';
 				removeBtn.innerHTML = '&times;';
 				removeBtn.title = 'Remove item';
-				removeBtn.addEventListener('click', function(e){ e.stopPropagation(); removeItemFromCart(id); });
+				removeBtn.addEventListener('click', function (e) { e.stopPropagation(); removeItemFromCart(id); });
 				wrapper.appendChild(removeBtn);
 
 				cartPreview.appendChild(wrapper);
@@ -923,12 +991,12 @@
 					customizations: customizations
 				})
 			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					updateCartUI();
-				}
-			});
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						updateCartUI();
+					}
+				});
 		}
 
 
@@ -938,16 +1006,16 @@
 
 		// Back button confirmation if cart not empty
 		const backBtn = document.getElementById('back-btn');
-		backBtn.addEventListener('click', function(e){
+		backBtn.addEventListener('click', function (e) {
 			if (Object.keys(cart).length > 0) {
 				if (!confirm('You have items in your cart. Do you really want to go back?')) return;
 				if (!confirm('Please confirm again: leaving now will keep your cart on this page. Continue?')) return;
 			}
-			window.location.href = '{% url "home" %}';
+			window.location.href = '{% url "home_page" %}';
 		});
 
 		// Hide preloader on page load
-		window.addEventListener('load', function() {
+		window.addEventListener('load', function () {
 			const preloader = document.getElementById('preloader');
 			if (preloader) {
 				preloader.style.display = 'none';
@@ -955,4 +1023,5 @@
 		});
 	</script>
 </body>
+
 </html>

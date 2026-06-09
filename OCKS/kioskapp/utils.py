@@ -6,6 +6,7 @@ import base64
 import qrcode
 from PIL import Image, ImageOps
 from django.core.files.base import ContentFile
+from django.utils import timezone
 
 from kioskapp.models import Order
 
@@ -18,8 +19,8 @@ def generate_queue_number():
     next sequence as an int (1,2,3...). Templates will prepend the date when
     rendering the queue display.
     """
-    today = datetime.now()
-    today_orders = Order.objects.filter(created_at__date=today.date()).values_list('queue_number', flat=True)
+    today = timezone.localdate()
+    today_orders = Order.objects.filter(created_at__date=today).values_list('queue_number', flat=True)
 
     max_seq = 0
     for q in today_orders:
@@ -38,10 +39,50 @@ def generate_queue_number():
     return next_seq
 
 def calculate_estimated_wait_time():
-    """Calculate estimated wait time based on pending orders"""
-    pending_orders = Order.objects.filter(status='Pending').count()
-    # Assume 5 minutes per order
-    estimated_minutes = pending_orders * 5
+    """Calculate estimated wait time based on pending and preparing orders, and item complexity"""
+    active_orders = Order.objects.filter(status__in=['Pending', 'Preparing'])
+    
+    if not active_orders.exists():
+        return 3 # base minimum wait time in minutes for a new order
+        
+    # Estimated preparation time in minutes by category
+    PREP_TIMES = {
+        'drinks': 3,
+        'desserts': 2,
+        'snacks': 2,
+        'breads': 4,
+        'pasta & noodles': 8,
+        'local specialties': 8
+    }
+    
+    total_prep_time = 0
+    from kioskapp.models import OrderItem
+    
+    for order in active_orders:
+        order_items = OrderItem.objects.filter(order=order).select_related('item', 'item__category', 'item__category__parent')
+        order_max_prep = 3 # base prep time for any order is 3 mins
+        for oi in order_items:
+            # Get category name
+            cat_name = oi.item.category.name.lower() if oi.item.category else ''
+            parent_cat_name = oi.item.category.parent.name.lower() if (oi.item.category and oi.item.category.parent) else ''
+            
+            # Match category prep time
+            prep_time = 3 # default
+            for cat_key, time_val in PREP_TIMES.items():
+                if cat_key in cat_name or cat_key in parent_cat_name:
+                    prep_time = time_val
+                    break
+            
+            # Since items in an order are prepared in parallel (mostly), we take the maximum item prep time
+            # plus 1 minute for each additional item in the order
+            total_item_prep = prep_time * oi.quantity
+            if total_item_prep > order_max_prep:
+                order_max_prep = total_item_prep
+                
+        total_prep_time += order_max_prep
+        
+    # Divide by 2 (assuming 2 staff members working in parallel)
+    estimated_minutes = max(3, int(total_prep_time / 2))
     return estimated_minutes
 
 def generate_qr_code(order_id, amount_paid):
