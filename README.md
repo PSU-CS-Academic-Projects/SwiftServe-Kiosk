@@ -183,9 +183,9 @@ Follow these steps to run the project locally on your machine:
 - [ ] Integrate sales reports dashboard page with analytics.
 
 ### Contributors
-- **Castillo, Kenneth Vincent** (Project Lead / Lead Developer)
-- **Malate, Juan Miguel** (Frontend Developer / UI Designer)
-- **Padrones, Kim Andrei** (Quality Assurance / Database Designer)
+- **Castillo, Kenneth Vincent** (Developer)
+- **Malate, Juan Miguel** (Developer)
+- **Padrones, Kim Andrei** (Developer)
 
 ### License
 This repository contains a **Private Academic Project** built for computer science coursework. Distribution, copying, or public reproduction is strictly prohibited without the consent of the contributors.
