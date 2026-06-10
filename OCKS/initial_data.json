@@ -1,0 +1,1534 @@
+[
+{
+    "model": "kioskapp.customer",
+    "pk": 3,
+    "fields": {
+        "name": "Kenneth Castillo",
+        "phone_number": "09773349252",
+        "email": "202380191@psu.palawan.edu.ph",
+        "password": "pbkdf2_sha256$1000000$U2J46ZaxcScdWBUbckWmaP$9QBCO1hMdZFlnsOqEOJxrsXa5fPUodShmpVECa5gRGc=",
+        "created_at": "2026-06-09T07:14:11.575Z"
+    }
+},
+{
+    "model": "kioskapp.customer",
+    "pk": 4,
+    "fields": {
+        "name": "Kevin",
+        "phone_number": "09123456789",
+        "email": "kennethcastillo622@gmail.com",
+        "password": "pbkdf2_sha256$1000000$X0W5rYtH5rf0Rjkb4HxN1B$x429XM2yvYYjWY4XTeMPdRiJ0s2SuSGhVDyq6jEHGKM=",
+        "created_at": "2026-06-09T16:40:28.479Z"
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 15,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "465.00",
+        "party_size": null,
+        "queue_number": 1,
+        "status": "Pending",
+        "created_at": "2026-06-08T12:49:44.882Z",
+        "customer": null
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 16,
+    "fields": {
+        "order_type": "take_out",
+        "total_price": "165.00",
+        "party_size": null,
+        "queue_number": 2,
+        "status": "Pending",
+        "created_at": "2026-06-08T12:55:46.720Z",
+        "customer": null
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 17,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "392.00",
+        "party_size": null,
+        "queue_number": 3,
+        "status": "Pending",
+        "created_at": "2026-06-08T13:05:29.979Z",
+        "customer": null
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 18,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "80.00",
+        "party_size": null,
+        "queue_number": 4,
+        "status": "Pending",
+        "created_at": "2026-06-08T13:24:27.790Z",
+        "customer": null
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 19,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "80.00",
+        "party_size": null,
+        "queue_number": 1,
+        "status": "Pending",
+        "created_at": "2026-06-09T06:37:32.509Z",
+        "customer": null
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 20,
+    "fields": {
+        "order_type": "take_out",
+        "total_price": "119.00",
+        "party_size": null,
+        "queue_number": 2,
+        "status": "Cancelled",
+        "created_at": "2026-06-09T15:08:10.259Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 21,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "80.00",
+        "party_size": null,
+        "queue_number": 3,
+        "status": "Completed",
+        "created_at": "2026-06-09T15:21:59.550Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 22,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "386.00",
+        "party_size": null,
+        "queue_number": 1,
+        "status": "Pending",
+        "created_at": "2026-06-09T16:00:47.421Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 23,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "159.00",
+        "party_size": null,
+        "queue_number": 1,
+        "status": "Cancelled",
+        "created_at": "2026-06-09T16:07:09.229Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 24,
+    "fields": {
+        "order_type": "take_out",
+        "total_price": "245.00",
+        "party_size": null,
+        "queue_number": 1,
+        "status": "Preparing",
+        "created_at": "2026-06-09T16:15:46.597Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 25,
+    "fields": {
+        "order_type": "take_out",
+        "total_price": "80.00",
+        "party_size": null,
+        "queue_number": 2,
+        "status": "Cancelled",
+        "created_at": "2026-06-10T03:16:30.266Z",
+        "customer": 4
+    }
+},
+{
+    "model": "kioskapp.order",
+    "pk": 26,
+    "fields": {
+        "order_type": "delivery",
+        "total_price": "619.00",
+        "party_size": null,
+        "queue_number": 3,
+        "status": "Pending",
+        "created_at": "2026-06-10T03:42:48.727Z",
+        "customer": 3
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 4,
+    "fields": {
+        "name": "Desserts",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 5,
+    "fields": {
+        "name": "Drinks",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 8,
+    "fields": {
+        "name": "Pasta & Noodles",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 9,
+    "fields": {
+        "name": "Breads",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 10,
+    "fields": {
+        "name": "Local specialties",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 11,
+    "fields": {
+        "name": "Snacks",
+        "parent": null
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 12,
+    "fields": {
+        "name": "Coffee",
+        "parent": 5
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 13,
+    "fields": {
+        "name": "Tea",
+        "parent": 5
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 14,
+    "fields": {
+        "name": "Frappe",
+        "parent": 5
+    }
+},
+{
+    "model": "kioskapp.category",
+    "pk": 15,
+    "fields": {
+        "name": "Milk Tea",
+        "parent": 5
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 1,
+    "fields": {
+        "name": "Espresso",
+        "category": 12,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/espresso.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 4,
+    "fields": {
+        "name": "Americano",
+        "category": 12,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/americano.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 5,
+    "fields": {
+        "name": "Macchiato",
+        "category": 12,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/macchiato.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 18,
+    "fields": {
+        "name": "Cheesecake",
+        "category": 4,
+        "price": "80.00",
+        "description": "",
+        "image": "menu_items/cheesecake.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 22,
+    "fields": {
+        "name": "Bagels",
+        "category": 9,
+        "price": "65.00",
+        "description": "",
+        "image": "menu_items/bagels.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 23,
+    "fields": {
+        "name": "Baguette",
+        "category": 9,
+        "price": "65.00",
+        "description": "",
+        "image": "menu_items/baguette.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 24,
+    "fields": {
+        "name": "Beef Lasagna",
+        "category": 8,
+        "price": "119.00",
+        "description": "",
+        "image": "menu_items/beef-lasagna.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 25,
+    "fields": {
+        "name": "Biscoff Frappe Dwarf",
+        "category": 14,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/biscoff-frappe-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 26,
+    "fields": {
+        "name": "Biscoff Frappe Classic",
+        "category": 14,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/biscoff-frappe-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 27,
+    "fields": {
+        "name": "Biscoff Frappe Giant",
+        "category": 14,
+        "price": "119.00",
+        "description": "",
+        "image": "menu_items/biscoff-frappe-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 28,
+    "fields": {
+        "name": "Capuccino",
+        "category": 12,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/capuccino.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 29,
+    "fields": {
+        "name": "Caramelized Turon",
+        "category": 11,
+        "price": "39.00",
+        "description": "",
+        "image": "menu_items/caramelized-turon.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 30,
+    "fields": {
+        "name": "Carbonara",
+        "category": 8,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/carbonara.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 31,
+    "fields": {
+        "name": "Carrot Cake",
+        "category": 4,
+        "price": "85.00",
+        "description": "",
+        "image": "menu_items/carrot-cake.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 32,
+    "fields": {
+        "name": "Chai Tea",
+        "category": 13,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/chai-tea.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 33,
+    "fields": {
+        "name": "Champorado",
+        "category": 10,
+        "price": "85.00",
+        "description": "",
+        "image": "menu_items/champorado.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 34,
+    "fields": {
+        "name": "Chicken Alfredo Pasta",
+        "category": 8,
+        "price": "139.00",
+        "description": "",
+        "image": "menu_items/chicken-alfredo-pasta.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 35,
+    "fields": {
+        "name": "Chicken Tenders",
+        "category": 11,
+        "price": "105.00",
+        "description": "",
+        "image": "menu_items/chicken-tenders.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 36,
+    "fields": {
+        "name": "Classic Black Coffee",
+        "category": 12,
+        "price": "69.00",
+        "description": "",
+        "image": "menu_items/classic-black-coffee.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 37,
+    "fields": {
+        "name": "Classic Cupcake",
+        "category": 4,
+        "price": "80.00",
+        "description": "",
+        "image": "menu_items/classic-cupcake.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 38,
+    "fields": {
+        "name": "Classic Ginger Tea",
+        "category": 13,
+        "price": "69.00",
+        "description": "",
+        "image": "menu_items/classic-ginger-tea.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 39,
+    "fields": {
+        "name": "Croissant",
+        "category": 9,
+        "price": "85.00",
+        "description": "",
+        "image": "menu_items/croissant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 40,
+    "fields": {
+        "name": "Dark Chocolate Frappe Dwarf",
+        "category": 14,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/dark-chocolate-frappe-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 41,
+    "fields": {
+        "name": "Dark Chocolate Frappe Classic",
+        "category": 14,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/dark-chocolate-frappe-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 42,
+    "fields": {
+        "name": "Dark Chocolate Frappe Giant",
+        "category": 14,
+        "price": "119.00",
+        "description": "",
+        "image": "menu_items/dark-chocolate-frappe-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 43,
+    "fields": {
+        "name": "Fish n Chips",
+        "category": 11,
+        "price": "129.00",
+        "description": "",
+        "image": "menu_items/fish-n-chips.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 44,
+    "fields": {
+        "name": "Garlic Bread",
+        "category": 9,
+        "price": "55.00",
+        "description": "",
+        "image": "menu_items/garlic-bread.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 45,
+    "fields": {
+        "name": "Green Tea",
+        "category": 13,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/green-tea.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 46,
+    "fields": {
+        "name": "Honey Lemon Tea",
+        "category": 13,
+        "price": "69.00",
+        "description": "",
+        "image": "menu_items/honey-lemon-tea.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 47,
+    "fields": {
+        "name": "Ice Cream Cake",
+        "category": 4,
+        "price": "80.00",
+        "description": "",
+        "image": "menu_items/ice-cream-cake.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 48,
+    "fields": {
+        "name": "Jasmine Tea",
+        "category": 13,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/jasmine-tea.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 49,
+    "fields": {
+        "name": "Java Chip Frappe Dwarf",
+        "category": 14,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/java-chip-frappe-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 50,
+    "fields": {
+        "name": "Java Chip Frappe Classic",
+        "category": 14,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/java-chip-frappe-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 51,
+    "fields": {
+        "name": "Java Chip Frappe Giant",
+        "category": 14,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/java-chip-frappe-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 52,
+    "fields": {
+        "name": "Mac n Cheese",
+        "category": 8,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/mac-n-cheese.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 53,
+    "fields": {
+        "name": "Mocha Latte Frappe Dwarf",
+        "category": 14,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/mocha-latte-frappe-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 54,
+    "fields": {
+        "name": "Mocha Latte Frappe Classic",
+        "category": 14,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/mocha-latte-frappe-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 55,
+    "fields": {
+        "name": "Mocha Latte Frappe Giant",
+        "category": 14,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/mocha-latte-frappe-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 56,
+    "fields": {
+        "name": "Okinawa Milktea Dwarf",
+        "category": 15,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/okinawa-milktea-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 57,
+    "fields": {
+        "name": "Okinawa Milktea Classic",
+        "category": 15,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/okinawa-milktea-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 58,
+    "fields": {
+        "name": "Okinawa Milktea Giant",
+        "category": 15,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/okinawa-milktea-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 59,
+    "fields": {
+        "name": "Oreo Milktea Dwarf",
+        "category": 15,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/oreo-milktea-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 60,
+    "fields": {
+        "name": "Oreo Milktea Classic",
+        "category": 15,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/oreo-milktea-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 61,
+    "fields": {
+        "name": "Oreo Milktea Giant",
+        "category": 15,
+        "price": "119.00",
+        "description": "",
+        "image": "menu_items/oreo-milktea-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 62,
+    "fields": {
+        "name": "Oreo Overload Milktea Dwarf",
+        "category": 15,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/oreo-overload-milktea-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 63,
+    "fields": {
+        "name": "Oreo Overload Milktea Classic",
+        "category": 15,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/oreo-overload-milktea-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 64,
+    "fields": {
+        "name": "Oreo Overload Milktea Giant",
+        "category": 15,
+        "price": "119.00",
+        "description": "",
+        "image": "menu_items/oreo-overload-milktea-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 65,
+    "fields": {
+        "name": "Pesto Pasta",
+        "category": 8,
+        "price": "129.00",
+        "description": "",
+        "image": "menu_items/pesto-pasta.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 66,
+    "fields": {
+        "name": "Red Velvet Cake",
+        "category": 4,
+        "price": "85.00",
+        "description": "",
+        "image": "menu_items/red-velvet-cake.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 67,
+    "fields": {
+        "name": "Red Velvet Milktea Dwarf",
+        "category": 15,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/red-velvet-milktea-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 68,
+    "fields": {
+        "name": "Red Velvet Milktea Classic",
+        "category": 15,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/red-velvet-milktea-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 69,
+    "fields": {
+        "name": "Red Velvet Milktea Giant",
+        "category": 15,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/red-velvet-milktea-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 70,
+    "fields": {
+        "name": "Sour Dough Bread",
+        "category": 9,
+        "price": "75.00",
+        "description": "",
+        "image": "menu_items/sour-dough-bread.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 71,
+    "fields": {
+        "name": "Special Ice Cream",
+        "category": 4,
+        "price": "80.00",
+        "description": "",
+        "image": "menu_items/special-ice-cream.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 72,
+    "fields": {
+        "name": "Special Mojos",
+        "category": 11,
+        "price": "79.00",
+        "description": "",
+        "image": "menu_items/special-mojos.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 73,
+    "fields": {
+        "name": "Special Sopas",
+        "category": 10,
+        "price": "90.00",
+        "description": "",
+        "image": "menu_items/special-sopas.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 74,
+    "fields": {
+        "name": "Strawberry Frappe Dwarf",
+        "category": 14,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/strawberry-frappe-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 75,
+    "fields": {
+        "name": "Strawberry Frappe Classic",
+        "category": 14,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/strawberry-frappe-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 76,
+    "fields": {
+        "name": "Strawberry Frappe Giant",
+        "category": 14,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/strawberry-frappe-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 77,
+    "fields": {
+        "name": "Tuna Spaghetti",
+        "category": 8,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/tuna-spaghetti.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 78,
+    "fields": {
+        "name": "Voodoo Fries",
+        "category": 11,
+        "price": "69.00",
+        "description": "",
+        "image": "menu_items/voodoo-fries.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 79,
+    "fields": {
+        "name": "Wintermelon Milktea Dwarf",
+        "category": 15,
+        "price": "89.00",
+        "description": "",
+        "image": "menu_items/wintermelon-milktea-dwarf.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 80,
+    "fields": {
+        "name": "Wintermelon Milktea Classic",
+        "category": 15,
+        "price": "99.00",
+        "description": "",
+        "image": "menu_items/wintermelon-milktea-classic.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.menuitem",
+    "pk": 81,
+    "fields": {
+        "name": "Wintermelon Milktea Giant",
+        "category": 15,
+        "price": "109.00",
+        "description": "",
+        "image": "menu_items/wintermelon-milktea-giant.jpg",
+        "max_quantity": 99,
+        "available": true
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 32,
+    "fields": {
+        "order": 15,
+        "item": 5,
+        "quantity": 1,
+        "subtotal": "79.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 33,
+    "fields": {
+        "order": 15,
+        "item": 26,
+        "quantity": 1,
+        "subtotal": "109.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 34,
+    "fields": {
+        "order": 15,
+        "item": 36,
+        "quantity": 1,
+        "subtotal": "69.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 35,
+    "fields": {
+        "order": 15,
+        "item": 60,
+        "quantity": 1,
+        "subtotal": "109.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 36,
+    "fields": {
+        "order": 15,
+        "item": 52,
+        "quantity": 1,
+        "subtotal": "99.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 37,
+    "fields": {
+        "order": 16,
+        "item": 18,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 38,
+    "fields": {
+        "order": 16,
+        "item": 31,
+        "quantity": 1,
+        "subtotal": "85.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 39,
+    "fields": {
+        "order": 17,
+        "item": 18,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 40,
+    "fields": {
+        "order": 17,
+        "item": 50,
+        "quantity": 1,
+        "subtotal": "99.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 41,
+    "fields": {
+        "order": 17,
+        "item": 55,
+        "quantity": 1,
+        "subtotal": "109.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 42,
+    "fields": {
+        "order": 17,
+        "item": 22,
+        "quantity": 1,
+        "subtotal": "65.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 43,
+    "fields": {
+        "order": 17,
+        "item": 29,
+        "quantity": 1,
+        "subtotal": "39.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 44,
+    "fields": {
+        "order": 18,
+        "item": 47,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 45,
+    "fields": {
+        "order": 19,
+        "item": 47,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 46,
+    "fields": {
+        "order": 20,
+        "item": 24,
+        "quantity": 1,
+        "subtotal": "119.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 47,
+    "fields": {
+        "order": 21,
+        "item": 47,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 48,
+    "fields": {
+        "order": 22,
+        "item": 1,
+        "quantity": 1,
+        "subtotal": "79.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 49,
+    "fields": {
+        "order": 22,
+        "item": 50,
+        "quantity": 1,
+        "subtotal": "99.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 50,
+    "fields": {
+        "order": 22,
+        "item": 42,
+        "quantity": 1,
+        "subtotal": "119.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 51,
+    "fields": {
+        "order": 22,
+        "item": 53,
+        "quantity": 1,
+        "subtotal": "89.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 52,
+    "fields": {
+        "order": 23,
+        "item": 37,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 53,
+    "fields": {
+        "order": 23,
+        "item": 4,
+        "quantity": 1,
+        "subtotal": "79.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 54,
+    "fields": {
+        "order": 24,
+        "item": 47,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 55,
+    "fields": {
+        "order": 24,
+        "item": 37,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 56,
+    "fields": {
+        "order": 24,
+        "item": 31,
+        "quantity": 1,
+        "subtotal": "85.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 57,
+    "fields": {
+        "order": 25,
+        "item": 37,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 58,
+    "fields": {
+        "order": 26,
+        "item": 18,
+        "quantity": 1,
+        "subtotal": "80.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 59,
+    "fields": {
+        "order": 26,
+        "item": 5,
+        "quantity": 3,
+        "subtotal": "237.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 60,
+    "fields": {
+        "order": 26,
+        "item": 24,
+        "quantity": 1,
+        "subtotal": "119.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 61,
+    "fields": {
+        "order": 26,
+        "item": 29,
+        "quantity": 2,
+        "subtotal": "78.00"
+    }
+},
+{
+    "model": "kioskapp.orderitem",
+    "pk": 62,
+    "fields": {
+        "order": 26,
+        "item": 35,
+        "quantity": 1,
+        "subtotal": "105.00"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 15,
+    "fields": {
+        "order": 15,
+        "method": "card",
+        "amount_paid": "465.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-08T12:49:44.937Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 16,
+    "fields": {
+        "order": 16,
+        "method": "cash",
+        "amount_paid": "165.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-08T12:55:46.751Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 17,
+    "fields": {
+        "order": 17,
+        "method": "cash",
+        "amount_paid": "392.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-08T13:05:30.036Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 18,
+    "fields": {
+        "order": 18,
+        "method": "cash",
+        "amount_paid": "80.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-08T13:24:27.817Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 19,
+    "fields": {
+        "order": 19,
+        "method": "cash",
+        "amount_paid": "80.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T06:37:32.538Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 20,
+    "fields": {
+        "order": 20,
+        "method": "card",
+        "amount_paid": "119.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T15:08:10.288Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 21,
+    "fields": {
+        "order": 21,
+        "method": "cash",
+        "amount_paid": "80.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T15:21:59.571Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 22,
+    "fields": {
+        "order": 22,
+        "method": "cash",
+        "amount_paid": "386.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T16:00:47.476Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 23,
+    "fields": {
+        "order": 23,
+        "method": "cash",
+        "amount_paid": "159.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T16:07:09.267Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 24,
+    "fields": {
+        "order": 24,
+        "method": "cash",
+        "amount_paid": "245.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-09T16:15:46.643Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 25,
+    "fields": {
+        "order": 25,
+        "method": "cash",
+        "amount_paid": "80.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-10T03:16:30.330Z"
+    }
+},
+{
+    "model": "kioskapp.payment",
+    "pk": 26,
+    "fields": {
+        "order": 26,
+        "method": "cash",
+        "amount_paid": "619.00",
+        "payment_status": "Pending",
+        "paid_at": "2026-06-10T03:42:48.805Z"
+    }
+}
+]
