@@ -1,4 +1,4 @@
-# SwiftServe Kiosk ☕🍔
+# SwiftServe Kiosk ☕
 > **OCKS — Online Cafe Kiosk System**
 
 SwiftServe Kiosk is an interactive, modern, and user-friendly online cafe self-service kiosk system designed to streamline the food and beverage ordering process. It aims to reduce physical queues, minimize wait times, and offer cafe owners/staff an intuitive, real-time administrative dashboard for order tracking and status management.
