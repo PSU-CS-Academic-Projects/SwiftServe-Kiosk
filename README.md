@@ -1,4 +1,4 @@
-# SwiftServe Kiosk ☕
+# SwiftServe Kiosk ☕ (https://swiftservekiosk.pythonanywhere.com/)
 > **OCKS — Online Cafe Kiosk System**
 
 SwiftServe Kiosk is an interactive, modern, and user-friendly online cafe self-service kiosk system designed to streamline the food and beverage ordering process. It aims to reduce physical queues, minimize wait times, and offer cafe owners/staff an intuitive, real-time administrative dashboard for order tracking and status management.
@@ -91,7 +91,7 @@ The post-order tracking screens. Customers can view their receipt, check the dyn
 ### How to Access
 1. Start the Django local server.
 2. Navigate to `/admin/orders/` in your browser.
-3. Sign in using administrative staff credentials.
+3. Sign in using administrative staff credentials One is provided for viewing and testing purposes: Username: 'tester'; Password: 'tester'. (Without the '')
 4. (Optional) To access database raw tables directly, go to `/admin/` to view Django's built-in models admin.
 
 ### Live Admin Capabilities
