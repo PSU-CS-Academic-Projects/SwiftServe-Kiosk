@@ -65,7 +65,7 @@ graph LR
 7. **Real-time Order Status Tracker** (`/kiosk/order/[id]/status/`): Shows order steps (Pending -> Preparing -> Ready -> Completed).
    - Customers can request order cancellation within a 90-second safety window.
 
-### 📸 UI/UX Screenshots
+### Screenshots
 
 #### 1. Customer Home / Get Started Page
 The landing screen for logged-in customers features a welcome greeting card, a dynamic category menu carousel, and a list of their recent orders with cancellation status badges.
