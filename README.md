@@ -172,6 +172,11 @@ Follow these steps to run the project locally on your machine:
 
 ---
 
+## Video Demonstration  
+- [SwiftServe Kiosk - Video Demonstration](https://drive.google.com/file/d/1nc7r9xAKGjos6ownqkLjMAu1T8q8EzNd/view?usp=drive_link)
+
+---
+
 ## 🗓️ Project Context
 
 ### Roadmap
